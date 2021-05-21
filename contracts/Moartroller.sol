@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-// Thanks to Compound for providing base code
+// Thanks to Compound for their foundational work in DeFi and open-sourcing their code from which we build upon.
 
 pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;

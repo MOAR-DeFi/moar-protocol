@@ -8,8 +8,8 @@ import "./Moartroller.sol";
 import "./AbstractInterestRateModel.sol";
 
 /**
- * @title MOAR's CErc20Delegator Contract
- * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
+ * @title MOAR's MErc20Delegator Contract
+ * @notice MTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author MOAR
  */
 contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface, MDelegationStorage {
@@ -64,7 +64,7 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public override {
-        require(msg.sender == admin, "CErc20Delegator::_setImplementation: Caller must be admin");
+        require(msg.sender == admin, "MErc20Delegator::_setImplementation: Caller must be admin");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -79,7 +79,7 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
+     * @notice Sender supplies assets into the market and receives mTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -90,9 +90,9 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     }
 
     /**
-     * @notice Sender redeems cTokens in exchange for the underlying asset
+     * @notice Sender redeems mTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of cTokens to redeem into underlying
+     * @param redeemTokens The number of mTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint redeemTokens) external  returns (uint) {
@@ -101,7 +101,7 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     }
 
     /**
-     * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems mTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -145,13 +145,13 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this cToken to be liquidated
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this mToken to be liquidated
+     * @param mTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, MTokenInterface cTokenCollateral) external  returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("liquidateBorrow(address,uint256,address)", borrower, repayAmount, cTokenCollateral));
+    function liquidateBorrow(address borrower, uint repayAmount, MTokenInterface mTokenCollateral) external  returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("liquidateBorrow(address,uint256,address)", borrower, repayAmount, mTokenCollateral));
         return abi.decode(data, (uint));
     }
 
@@ -235,7 +235,7 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     }
 
     /**
-     * @notice Returns the current per-block borrow interest rate for this cToken
+     * @notice Returns the current per-block borrow interest rate for this mToken
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() external override view returns (uint) {
@@ -244,7 +244,7 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     }
 
     /**
-     * @notice Returns the current per-block supply interest rate for this cToken
+     * @notice Returns the current per-block supply interest rate for this mToken
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() external override view returns (uint) {
@@ -291,7 +291,7 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the CToken
+     * @notice Calculates the exchange rate from the underlying to the MToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
@@ -301,12 +301,21 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
     }
 
     /**
-     * @notice Get cash balance of this cToken in the underlying asset
+     * @notice Get cash balance of this mToken in the underlying asset
      * @return The quantity of underlying asset owned by this contract
      */
     function getCash() external override view returns (uint) {
         bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("getCash()"));
         return abi.decode(data, (uint));
+    }
+
+    /**
+     * @notice Get cash balance of this mToken in the underlying asset
+     * @return The quantity of underlying asset owned by this contract
+     */
+    function getUnderlying() external override view returns (address) {
+        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("getUnderlying()"));
+        return abi.decode(data, (address));
     }
 
     /**
@@ -321,16 +330,24 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Will fail unless called by another cToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
+     * @dev Will fail unless called by another mToken during the process of liquidation.
+     *  Its absolutely critical to use msg.sender as the borrowed mToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of cTokens to seize
+     * @param seizeTokens The number of mTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seize(address liquidator, address borrower, uint seizeTokens) external override returns (uint) {
         bytes memory data = delegateToImplementation(abi.encodeWithSignature("seize(address,address,uint256)", liquidator, borrower, seizeTokens));
         return abi.decode(data, (uint));
+    }
+
+    /**
+     * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)
+     * @param token The address of the ERC-20 token to sweep
+     */
+    function sweepToken(EIP20NonStandardInterface token) external {
+        delegateToImplementation(abi.encodeWithSignature("sweepToken(address)", token));
     }
 
     /*** Admin Functions ***/
@@ -457,7 +474,7 @@ contract MErc20Delegator is MTokenInterface, MTokenStorage, MDelegatorInterface,
      */
 
     receive () external payable {
-        require(msg.value == 0,"CErc20Delegator:fallback: cannot send value to fallback");
+        require(msg.value == 0,"MErc20Delegator:fallback: cannot send value to fallback");
 
         // delegate all other functions to current implementation
         (bool success, ) = implementation.delegatecall(msg.data);

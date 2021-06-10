@@ -75,7 +75,7 @@ contract MoartrollerV2Storage is MoartrollerV1Storage {
     }
 
     /**
-     * @dev Official mapping of cTokens -> Market metadata
+     * @dev Official mapping of mTokens -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -133,7 +133,7 @@ contract MoartrollerV4Storage is MoartrollerV3Storage {
     // @dev The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;
 
-    // @dev Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
+    // @dev Borrow caps enforced by borrowAllowed for each mToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
 }
 
@@ -147,14 +147,19 @@ contract MoartrollerV5Storage is MoartrollerV4Storage {
 
 contract MoartrollerV6Storage is MoartrollerV5Storage {
     /**
+     * @dev Moar token address
+     */
+    address public moarToken;
+    
+    /**
      * @dev CProtection contract which can be used for collateral optimisation
      */
     MProtection public cprotection;
 
     /**
-     * @dev Mapping for basic token address to cToken
+     * @dev Mapping for basic token address to mToken
      */
-    mapping(address => MToken) public tokenAddressToCToken;
+    mapping(address => MToken) public tokenAddressToMToken;
 
     /**
      * @dev Math model for liquidity calculation

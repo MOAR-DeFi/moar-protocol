@@ -4,6 +4,9 @@ pragma solidity ^0.6.12;
 import "./Interfaces/PriceOracle.sol";
 import "./CErc20.sol";
 
+/**
+ * Temporary simple price feed 
+ */
 contract SimplePriceOracle is PriceOracle {
     /// @notice Indicator that this is a PriceOracle contract (for inspection)
     bool public constant isPriceOracle = true;
@@ -12,16 +15,16 @@ contract SimplePriceOracle is PriceOracle {
 
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
 
-    function getUnderlyingPrice(MToken cToken) public override view returns (uint) {
-        if (compareStrings(cToken.symbol(), "cDAI")) {
+    function getUnderlyingPrice(MToken mToken) public override view returns (uint) {
+        if (compareStrings(mToken.symbol(), "mDAI")) {
             return 1e18;
         } else {
-            return prices[address(MErc20(address(cToken)).underlying())];
+            return prices[address(MErc20(address(mToken)).underlying())];
         }
     }
 
-    function setUnderlyingPrice(MToken cToken, uint underlyingPriceMantissa) public {
-        address asset = address(MErc20(address(cToken)).underlying());
+    function setUnderlyingPrice(MToken mToken, uint underlyingPriceMantissa) public {
+        address asset = address(MErc20(address(mToken)).underlying());
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
         prices[asset] = underlyingPriceMantissa;
     }

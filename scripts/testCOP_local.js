@@ -1,11 +1,11 @@
 const axios = require('axios');
 const { tokens, toTokens, fromTokens, fromWei, increaseTime } = require('./../test/utils/testHelpers')
-const { setupToken, setupMToken, setupCEther, setupMaximillion } = require('./../test/utils/setupContracts');
+const { setupToken, setupMToken, setupMEther, setupMaximillion } = require('./../test/utils/setupContracts');
 
 
 let owner, user1, user2, user3, user4
 let oracle, moartroller, liquidityMathModelV1, cuunn, maximillion, lendingRouter, unionRouter
-let cdai, cwbtc, cusdc, cunn, ceth  
+let mdai, mwbtc, musdc, munn, meth  
 let dai, wbtc, usdc, unn
 
 // Rinkeby addresses
@@ -89,56 +89,56 @@ async function setupLendingPlatform(){
     await cuunn.deployed()
     console.log("cuUNN deployed!\n")
 
-    // CTOKENS 
-    console.log("Deploying cDAI")
-    cdai  = await setupMToken('cToken DAI', 'cDAI', 18, '200000000000000000000000000', dai, moartroller, jrmStableCoin)
-    console.log("cDAI deployed!\n")
+    // MTOKENS 
+    console.log("Deploying mDAI")
+    mdai  = await setupMToken('mToken DAI', 'mDAI', 18, '200000000000000000000000000', dai, moartroller, jrmStableCoin)
+    console.log("mDAI deployed!\n")
     
-    console.log("Deploying cWBTC")
-    cwbtc = await setupMToken('cToken WBTC', 'cWBTC', 18, '20000000000000000', wbtc, moartroller, jrmWbtc)
-    console.log("cWBTC deployed!\n")
+    console.log("Deploying mWBTC")
+    mwbtc = await setupMToken('mToken WBTC', 'mWBTC', 18, '20000000000000000', wbtc, moartroller, jrmWbtc)
+    console.log("mWBTC deployed!\n")
 
-    console.log("Deploying cUSDC")
-    cusdc = await setupMToken('cToken USDC', 'cUSDC', 18, '200000000000000', usdc, moartroller, jrmStableCoin)
-    console.log("cUSDC deployed!\n")
+    console.log("Deploying mUSDC")
+    musdc = await setupMToken('mToken USDC', 'mUSDC', 18, '200000000000000', usdc, moartroller, jrmStableCoin)
+    console.log("mUSDC deployed!\n")
 
-    console.log("Deploying cUNN")
-    cunn  = await setupMToken('cToken TUNN', 'cUNN', 18, '200000000000000000000000000', unn, moartroller, jrmUnn)
-    console.log("cUNN deployed!\n")
+    console.log("Deploying mUNN")
+    munn  = await setupMToken('mToken TUNN', 'mUNN', 18, '200000000000000000000000000', unn, moartroller, jrmUnn)
+    console.log("mUNN deployed!\n")
 
-    console.log("Deploying cETH")
-    ceth  = await setupCEther('cEther', 'cETH', 18, '200000000000000000000000000', weth,  moartroller, jrmEth)
-    console.log("cETH deployed!\n")
+    console.log("Deploying mETH")
+    meth  = await setupMEther('cEther', 'mETH', 18, '200000000000000000000000000', weth,  moartroller, jrmEth)
+    console.log("mETH deployed!\n")
 
     // LENDING ROUTER
 
-    const UnnLendingRouter = await ethers.getContractFactory("UnnLendingRouter")
-    lendingRouter = await UnnLendingRouter.deploy(uUnnAddress, cuunn.address, dai.address)
+    const LendingRouter = await ethers.getContractFactory("LendingRouter")
+    lendingRouter = await LendingRouter.deploy(uUnnAddress, cuunn.address, dai.address)
     await lendingRouter.deployed()
 
     // LOAD SETTINGS
 
     console.log("Setting MPC")
-    await cdai._setMaxProtectionComposition(10000);
-    await cwbtc._setMaxProtectionComposition(500);
-    await cusdc._setMaxProtectionComposition(10000);
-    await cunn._setMaxProtectionComposition(2500);
-    await ceth._setMaxProtectionComposition(7600);
+    await mdai._setMaxProtectionComposition(10000);
+    await mwbtc._setMaxProtectionComposition(500);
+    await musdc._setMaxProtectionComposition(10000);
+    await munn._setMaxProtectionComposition(2500);
+    await meth._setMaxProtectionComposition(7600);
     console.log("Finished\n")
 
     console.log("Setting ReserveFactor")
-    await cdai._setReserveFactor(tokens('0.1'))
-    await cwbtc._setReserveFactor(tokens('0.2'))
-    await cusdc._setReserveFactor(tokens('0.1'))
-    await cunn._setReserveFactor(tokens('0.35'))
-    await ceth._setReserveFactor(tokens('0.2'))
+    await mdai._setReserveFactor(tokens('0.1'))
+    await mwbtc._setReserveFactor(tokens('0.2'))
+    await musdc._setReserveFactor(tokens('0.1'))
+    await munn._setReserveFactor(tokens('0.35'))
+    await meth._setReserveFactor(tokens('0.2'))
     console.log("Finished\n")
 
     console.log("Setting oracle prices")
-    await oracle.setUnderlyingPrice(ceth.address, '1750000000000000000000')
-    await oracle.setUnderlyingPrice(cwbtc.address, '550000000000000000000000000000000')
-    await oracle.setUnderlyingPrice(cusdc.address, '1000000000000000000000000000000')
-    await oracle.setUnderlyingPrice(cunn.address, '90000000000000000')
+    await oracle.setUnderlyingPrice(meth.address, '1750000000000000000000')
+    await oracle.setUnderlyingPrice(mwbtc.address, '550000000000000000000000000000000')
+    await oracle.setUnderlyingPrice(musdc.address, '1000000000000000000000000000000')
+    await oracle.setUnderlyingPrice(munn.address, '90000000000000000')
     console.log("Finished\n")
 
     console.log("Setting moartroller configuration")
@@ -149,19 +149,19 @@ async function setupLendingPlatform(){
     console.log("Finished\n")
 
     console.log("Setting moartroller supported markets")
-    await moartroller._supportMarket(cdai.address)
-    await moartroller._supportMarket(cwbtc.address)
-    await moartroller._supportMarket(cusdc.address)
-    await moartroller._supportMarket(cunn.address)
-    await moartroller._supportMarket(ceth.address)
+    await moartroller._supportMarket(mdai.address)
+    await moartroller._supportMarket(mwbtc.address)
+    await moartroller._supportMarket(musdc.address)
+    await moartroller._supportMarket(munn.address)
+    await moartroller._supportMarket(meth.address)
     console.log("Finished\n")
 
     console.log("Setting Collateral Factors")
-    await moartroller._setCollateralFactor(cdai.address, tokens('0.85'))
-    await moartroller._setCollateralFactor(cwbtc.address, tokens('0.75'))
-    await moartroller._setCollateralFactor(cusdc.address, tokens('0.85'))
-    await moartroller._setCollateralFactor(cunn.address, tokens('1.25'))
-    await moartroller._setCollateralFactor(ceth.address, tokens('0.75'))
+    await moartroller._setCollateralFactor(mdai.address, tokens('0.85'))
+    await moartroller._setCollateralFactor(mwbtc.address, tokens('0.75'))
+    await moartroller._setCollateralFactor(musdc.address, tokens('0.85'))
+    await moartroller._setCollateralFactor(munn.address, tokens('1.25'))
+    await moartroller._setCollateralFactor(meth.address, tokens('0.75'))
     console.log("Finished\n")
 
     console.log("Setting Privileged Addresses")
@@ -172,7 +172,7 @@ async function setupLendingPlatform(){
     // MAXIMILLION
 
     console.log("Deploying Maximillion")
-    maximillion = await setupMaximillion(ceth.address)
+    maximillion = await setupMaximillion(meth.address)
     console.log("Maximillion deployed!\n")
 }
 
@@ -191,12 +191,12 @@ async function attachUUnnRegistry(){
     return uunnnRegistry
 }
 
-async function makeDeposits(value, user, cToken, token = null){
+async function makeDeposits(value, user, mToken, token = null){
     if(token == null){
-        await cToken.connect(user).mint({value})
+        await mToken.connect(user).mint({value})
     }else{
-        await token.connect(user).approve(cToken.address, value)
-        await cToken.connect(user).mint(value)
+        await token.connect(user).approve(mToken.address, value)
+        await mToken.connect(user).mint(value)
     }
 }
 
@@ -210,10 +210,10 @@ async function main() {
     let buyer = owner
 
     // console.log('Making deposits')
-    // await makeDeposits(tokens('5'), buyer, ceth)
-    // await makeDeposits(tokens('605'), buyer, cdai, dai)
+    // await makeDeposits(tokens('5'), buyer, meth)
+    // await makeDeposits(tokens('605'), buyer, mdai, dai)
 
-    // await moartroller.connect(buyer).enterMarkets([ceth.address, cdai.address])
+    // await moartroller.connect(buyer).enterMarkets([meth.address, mdai.address])
     // console.log(`User liquidity: ${fromWei((await moartroller.getAccountLiquidity(buyer.address))[1].toString())} $`)
 
     // let results = await unionRouter.collateralProtection(wEthAddress)
@@ -243,31 +243,31 @@ async function main() {
     // console.log('DAI balance: ', fromTokens(await dai.balanceOf(buyer.address), 18, true))
     // console.log('Premium to pay: ', fromTokens(premium, 18, true))
 
-    // console.log('ETH borrow balance before: ', fromTokens(await ceth.callStatic.borrowBalanceCurrent(buyer.address), 18, true))
+    // console.log('ETH borrow balance before: ', fromTokens(await meth.callStatic.borrowBalanceCurrent(buyer.address), 18, true))
 
     // await dai.connect(buyer).approve(lendingRouter.address, premium)
-    // await lendingRouter.connect(buyer).purchaseProtectionAndMakeBorrow(protectionSellerAddress, cdai.address, tokens('100'), poolAddress, validTo, amount, strike, deadline, response.data.signedData.data, response.data.signedData.signature)
+    // await lendingRouter.connect(buyer).purchaseProtectionAndMakeBorrow(protectionSellerAddress, mdai.address, tokens('100'), poolAddress, validTo, amount, strike, deadline, response.data.signedData.data, response.data.signedData.signature)
     // console.log('purchaseProtectionAndMakeBorrow done!')
 
 
     // console.log("cuUNN balance:", (await cuunn.balanceOf(buyer.address)).toString())
-    // console.log('ETH borrow balance after: ', fromTokens(await ceth.callStatic.borrowBalanceCurrent(buyer.address), 18, true))
-    // let cTokenId = await cuunn.tokenOfOwnerByIndex(buyer.address, 0)
+    // console.log('ETH borrow balance after: ', fromTokens(await meth.callStatic.borrowBalanceCurrent(buyer.address), 18, true))
+    // let mTokenId = await cuunn.tokenOfOwnerByIndex(buyer.address, 0)
 
-    // console.log(`Protection total value: ${fromTokens(await cuunn.connect(buyer).getUnderlyingProtectionTotalValue(cTokenId), 18, true)} $`)
-    // console.log(`Protection locked value: ${fromTokens(await cuunn.connect(buyer).getUnderlyingProtectionLockedValue(cTokenId), 18, true)} $`)
-    // console.log(`Protection locked amount: ${await cuunn.connect(buyer).getUnderlyingProtectionLockedAmount(cTokenId)} `)
+    // console.log(`Protection total value: ${fromTokens(await cuunn.connect(buyer).getUnderlyingProtectionTotalValue(mTokenId), 18, true)} $`)
+    // console.log(`Protection locked value: ${fromTokens(await cuunn.connect(buyer).getUnderlyingProtectionLockedValue(mTokenId), 18, true)} $`)
+    // console.log(`Protection locked amount: ${await cuunn.connect(buyer).getUnderlyingProtectionLockedAmount(mTokenId)} `)
 
     // console.log(`User liquidity: ${fromTokens((await moartroller.getAccountLiquidity(buyer.address))[1], 18, true)} $`)
 
     
     // console.log(`---`)
     // increaseTime(604800 - (3 * 60 * 60) - 60)
-    // console.log(`Protection alive: ${await cuunn.connect(buyer).isProtectionAlive(cTokenId)}`)
+    // console.log(`Protection alive: ${await cuunn.connect(buyer).isProtectionAlive(mTokenId)}`)
     // console.log(`User liquidity just before expiration of c-op: ${fromTokens((await moartroller.getAccountLiquidity(buyer.address))[1], 18, false)} $`)
     // console.log(`---`)
     // increaseTime(120)
-    // console.log(`Protection alive: ${await cuunn.connect(buyer).isProtectionAlive(cTokenId)}`)
+    // console.log(`Protection alive: ${await cuunn.connect(buyer).isProtectionAlive(mTokenId)}`)
     // console.log(`User liquidity just after expiration of c-op: ${fromTokens((await moartroller.getAccountLiquidity(buyer.address))[1], 18, false)} $`)
 
 

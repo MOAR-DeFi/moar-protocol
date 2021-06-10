@@ -61,12 +61,46 @@ module.exports = {
       // forking: {
       //   url: process.env.DEV_TESTNET_URL
       // },
+      accounts: {
+        mnemonic: process.env.WALLET_MNEMONIC
+      }
     },
+    ganache: {
+      url: "http://127.0.0.1:7545",
+      accounts: {
+        mnemonic: process.env.WALLET_MNEMONIC
+      }
+    },
+    ropsten: {
+      url: "https://ropsten.infura.io/v3/"+process.env.INFURA_KEY,
+      gas: 5500000,
+      accounts: {
+        mnemonic: process.env.WALLET_MNEMONIC
+      }
+    },
+    rinkeby: {
+      url: "https://rinkeby.infura.io/v3/"+process.env.INFURA_KEY,
+      gas: 5500000,
+      accounts: {
+        mnemonic: process.env.WALLET_MNEMONIC
+      }
+    },
+    kovan: {
+      url: "https://kovan.infura.io/v3/"+process.env.INFURA_KEY,
+      gas: 12500000,
+      gasPrice: 10000000000,
+      accounts: {
+        mnemonic: process.env.WALLET_MNEMONIC
+      }
+    },
+    main: {
+      url: "https://mainnet.infura.io/v3/"+process.env.INFURA_KEY
+    }
   },
-  // gasReporter: {
-  //   currency: 'USD',
-  //   coinmarketcap: ''
-  // },
+  gasReporter: {
+    currency: 'USD',
+    coinmarketcap: process.env.COINMARKETCAP_KEY
+  },
   mocha: {
     timeout: 60000
   }

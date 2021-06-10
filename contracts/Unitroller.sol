@@ -6,7 +6,7 @@ import "./MoartrollerStorage.sol";
 /**
  * @title MoartrollerCore
  * @dev Storage for the moartroller is at this address, while execution is delegated to the `moartrollerImplementation`.
- * CTokens should reference this contract as their moartroller.
+ * MTokens should reference this contract as their moartroller.
  */
 contract Unitroller is UnitrollerAdminStorage, MoartrollerErrorReporter {
 

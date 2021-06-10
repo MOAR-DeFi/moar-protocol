@@ -14,13 +14,33 @@ import "./Utils/ErrorReporter.sol";
 import "./Utils/AssetHelpers.sol";
 import "./MToken.sol";
 
+/**
+ * @title MOAR's MProtection Contract
+ * @notice Collateral optimization ERC-721 wrapper
+ * @author MOAR
+ */
 contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
+    /**
+     * @notice Event emitted when new MProtection token is minted
+     */
     event Mint(address minter, uint tokenId, uint underlyingTokenId, address asset, uint amount, uint strikePrice, uint expirationTime);
+
+    /**
+     * @notice Event emitted when MProtection token is redeemed
+     */
     event Redeem(address redeemer, uint tokenId, uint underlyingTokenId);
+
+    /**
+     * @notice Event emitted when MProtection token changes its locked value
+     */
     event LockValue(uint tokenId, uint underlyingTokenId, uint optimizationValue);
+
+    /**
+     * @notice Event emitted when maturity window parameter is changed
+     */
     event MaturityWindowUpdated(uint newMaturityWindow);
 
     Counters.Counter private _tokenIds;
@@ -44,21 +64,40 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         bool isProtectionAlive;
     }
 
+    /**
+     * @notice Constructor for MProtection contract
+     * @param copMappingAddress The address of data mapper for C-OP
+     * @param moartrollerAddress The address of the Moartroller
+     */
     constructor(address copMappingAddress, address moartrollerAddress) public ERC721("c-uUNN OC-Protection", "c-uUNN") {
         _copMappingAddress = copMappingAddress;
         _moartrollerAddress = moartrollerAddress;
         _setMaturityWindow(10800); // 3 hours default
     }
 
+    /**
+     * @notice Returns C-OP mapping contract 
+     */
     function copMapping() private view returns (CopMappingInterface){
         return CopMappingInterface(_copMappingAddress);
     }
 
+    /**
+     * @notice Mint new MProtection token
+     * @param underlyingTokenId Id of C-OP token that will be deposited
+     * @return ID of minted MProtection token
+     */
     function mint(uint256 underlyingTokenId) public returns (uint256)
     {
         return mintFor(underlyingTokenId, msg.sender);
     }
 
+    /**
+     * @notice Mint new MProtection token for specified address
+     * @param underlyingTokenId Id of C-OP token that will be deposited
+     * @param receiver Address that will receive minted Mprotection token
+     * @return ID of minted MProtection token
+     */
     function mintFor(uint256 underlyingTokenId, address receiver) public returns (uint256)
     {
         CopMappingInterface copMappingInstance = copMapping();
@@ -80,6 +119,11 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         return newItemId;
     }
 
+    /**
+     * @notice Redeem C-OP token
+     * @param tokenId Id of MProtection token that will be withdrawn
+     * @return ID of redeemed C-OP token
+     */
     function redeem(uint256 tokenId) external returns (uint256) {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "cuUNN: caller is not owner nor approved");
         uint256 underlyingTokenId = getUnderlyingProtectionTokenId(tokenId);
@@ -91,6 +135,11 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         return underlyingTokenId;
     }
 
+    /**
+     * @notice Returns set of C-OP data
+     * @param tokenId Id of MProtection token 
+     * @return ProtectionMappedData struct filled with C-OP data
+     */
     function getMappedProtectionData(uint256 tokenId) public view returns (ProtectionMappedData memory){
         ProtectionMappedData memory data;
         (address pool, uint256 amount, uint256 strike, uint256 premium, uint issueTime , uint expirationTime) = getProtectionData(tokenId);
@@ -98,18 +147,37 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         return data;
     }
 
+    /**
+     * @notice Returns underlying token ID
+     * @param tokenId Id of MProtection token 
+     */
     function getUnderlyingProtectionTokenId(uint256 tokenId) public view returns (uint256){
         return _underlyingProtectionTokensMapping[tokenId];
     }
 
+    /**
+     * @notice Returns size of C-OPs filtered by asset address
+     * @param owner Address of wallet holding C-OPs
+     * @param currency Address of asset used to filter C-OPs
+     */
     function getUserUnderlyingProtectionTokenIdByCurrencySize(address owner, address currency) public view returns (uint256){
         return _protectionCurrencyMapping[owner][currency].length();
     }
 
+    /**
+     * @notice Returns list of C-OP IDs filtered by asset address
+     * @param owner Address of wallet holding C-OPs
+     * @param currency Address of asset used to filter C-OPs
+     */
     function getUserUnderlyingProtectionTokenIdByCurrency(address owner, address currency, uint256 index) public view returns (uint256){
         return _protectionCurrencyMapping[owner][currency].at(index);
     }
 
+    /**
+     * @notice Checks if address is owner of MProtection
+     * @param owner Address of potential owner to check
+     * @param tokenId ID of MProtection to check
+     */
     function isUserProtection(address owner, uint256 tokenId) public view returns(bool) {
         if(Moartroller(_moartrollerAddress).isPrivilegedAddress(msg.sender)){
             return true;
@@ -117,17 +185,31 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         return owner == ownerOf(tokenId);
     }
 
+    /**
+     * @notice Checks if MProtection is stil alive
+     * @param tokenId ID of MProtection to check
+     */
     function isProtectionAlive(uint256 tokenId) public view returns(bool) {
        uint256 deadline = getUnderlyingDeadline(tokenId);
        return (deadline - _maturityWindow) > now;
     }
 
+    /**
+     * @notice Creates appropriate indexes for C-OP
+     * @param owner C-OP owner address
+     * @param tokenId ID of MProtection 
+     * @param underlyingTokenId ID of C-OP 
+     */
     function addUProtectionIndexes(address owner, uint256 tokenId, uint256 underlyingTokenId) private{
         address currency = copMapping().getUnderlyingAsset(underlyingTokenId);
         _underlyingProtectionTokensMapping[tokenId] = underlyingTokenId;
         _protectionCurrencyMapping[owner][currency].add(tokenId);
     }
 
+    /**
+     * @notice Remove indexes for C-OP
+     * @param tokenId ID of MProtection 
+     */
     function removeProtectionIndexes(uint256 tokenId) private{
         address owner = ownerOf(tokenId);
         address currency = getUnderlyingAsset(tokenId);
@@ -135,6 +217,10 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         _protectionCurrencyMapping[owner][currency].remove(tokenId);
     }
 
+    /**
+     * @notice Returns C-OP total value
+     * @param tokenId ID of MProtection 
+     */
     function getUnderlyingProtectionTotalValue(uint256 tokenId) public view returns(uint256){
         address underlyingAsset = getUnderlyingAsset(tokenId);
         uint256 assetDecimalsMantissa = getAssetDecimalsMantissa(underlyingAsset);
@@ -148,6 +234,10 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         );
     }
 
+    /**
+     * @notice Returns C-OP locked value
+     * @param tokenId ID of MProtection 
+     */
     function getUnderlyingProtectionLockedValue(uint256 tokenId) public view returns(uint256){
         return _underlyingProtectionLockedValue[tokenId];
     }
@@ -200,11 +290,11 @@ contract MProtection is ERC721, Ownable, ExponentialNoError, AssetHelpers {
         address currency = getUnderlyingAsset(tokenId);
 
         Moartroller moartroller = Moartroller(_moartrollerAddress);
-        MToken cToken = moartroller.tokenAddressToCToken(currency);
-        require(moartroller.oracle().getUnderlyingPrice(cToken) <= getUnderlyingStrikePrice(tokenId), "ERROR: C-OP STRIKE PRICE IS LOWER THAN ASSET SPOT PRICE");
+        MToken mToken = moartroller.tokenAddressToMToken(currency);
+        require(moartroller.oracle().getUnderlyingPrice(mToken) <= getUnderlyingStrikePrice(tokenId), "ERROR: C-OP STRIKE PRICE IS LOWER THAN ASSET SPOT PRICE");
 
         uint protectionTotalValue = getUnderlyingProtectionTotalValue(tokenId);
-        uint maxOptimizableValue = moartroller.getMaxOptimizableValue(cToken, ownerOf(tokenId));
+        uint maxOptimizableValue = moartroller.getMaxOptimizableValue(mToken, ownerOf(tokenId));
 
         // add protection locked value if any
         uint protectionLockedValue = getUnderlyingProtectionLockedValue(tokenId);

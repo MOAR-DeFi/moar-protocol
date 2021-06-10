@@ -1,9 +1,9 @@
-const { setupToken, setupMToken, setupCEther, setupMaximillion } = require('./../../test/utils/setupContracts')
+const { setupToken, setupMToken, setupMEther, setupMaximillion } = require('./../../test/utils/setupContracts')
 const { tokens } = require('./../../test/utils/testHelpers')
 
 let owner, user1, user2, user3, user4
 let oracle, moartroller, liquidityMathModelV1, cuunn, maximillion, lendingRouter
-let cdai, cwbtc, cusdc, cunn, ceth  
+let mdai, mwbtc, musdc, munn, meth  
 let dai, wbtc, usdc, unn, weth
 
 // Rinkeby addresses
@@ -111,83 +111,85 @@ async function main() {
     await cuunn.deployed()
     console.log("cuUNN deployed!\n")
 
-    // CTOKENS 
-    console.log("Deploying cDAI")
-    cdai  = await setupMToken('cToken DAI', 'cDAI', 8, '200000000000000000000000000', dai, moartroller, jrmStableCoin)
-    console.log("cDAI deployed!\n")
+    // MTOKENS 
+    console.log("Deploying mDAI")
+    mdai  = await setupMToken('mToken DAI', 'mDAI', 8, '200000000000000000000000000', dai, moartroller, jrmStableCoin)
+    console.log("mDAI deployed!\n")
     
-    console.log("Deploying cWBTC")
-    cwbtc = await setupMToken('cToken WBTC', 'cWBTC', 8, '20000000000000000', wbtc, moartroller, jrmWbtc)
-    console.log("cWBTC deployed!\n")
+    console.log("Deploying mWBTC")
+    mwbtc = await setupMToken('mToken WBTC', 'mWBTC', 8, '20000000000000000', wbtc, moartroller, jrmWbtc)
+    console.log("mWBTC deployed!\n")
 
-    console.log("Deploying cUSDC")
-    cusdc = await setupMToken('cToken USDC', 'cUSDC', 8, '200000000000000', usdc, moartroller, jrmStableCoin)
-    console.log("cUSDC deployed!\n")
+    console.log("Deploying mUSDC")
+    musdc = await setupMToken('mToken USDC', 'mUSDC', 8, '200000000000000', usdc, moartroller, jrmStableCoin)
+    console.log("mUSDC deployed!\n")
 
-    console.log("Deploying cUNN")
-    cunn  = await setupMToken('cToken TUNN', 'cUNN', 8, '200000000000000000000000000', unn, moartroller, jrmUnn)
-    console.log("cUNN deployed!\n")
+    console.log("Deploying mUNN")
+    munn  = await setupMToken('mToken TUNN', 'mUNN', 8, '200000000000000000000000000', unn, moartroller, jrmUnn)
+    console.log("mUNN deployed!\n")
 
-    console.log("Deploying cMOAR")
-    cmoar  = await setupMToken('cToken MOAR', 'cMOAR', 8, '200000000000000000000000000', moar, moartroller, jrmUnn)
-    console.log("cMOAR deployed!\n")
+    console.log("Deploying mMOAR")
+    mmoar  = await setupMToken('mToken MOAR', 'mMOAR', 8, '200000000000000000000000000', moar, moartroller, jrmUnn)
+    console.log("mMOAR deployed!\n")
 
-    console.log("Deploying cETH")
-    ceth  = await setupCEther('cEther', 'cETH', 8, '200000000000000000000000000', weth,  moartroller, jrmEth)
-    console.log("cETH deployed!\n")
+    console.log("Deploying mETH")
+    meth  = await setupMEther('mEther', 'mETH', 8, '200000000000000000000000000', weth,  moartroller, jrmEth)
+    console.log("mETH deployed!\n")
 
     // LENDING ROUTER
 
-    const UnnLendingRouter = await ethers.getContractFactory("UnnLendingRouter")
-    lendingRouter = await UnnLendingRouter.deploy(uUnnAddress, cuunn.address, dai.address)
+    const LendingRouter = await ethers.getContractFactory("LendingRouter")
+    lendingRouter = await LendingRouter.deploy(uUnnAddress, cuunn.address, usdc.address)
     await lendingRouter.deployed()
 
     // LOAD SETTINGS
 
     console.log("Setting MPC")
-    tx = await cdai._setMaxProtectionComposition(10000);
+    tx = await mdai._setMaxProtectionComposition(10000);
     await tx.wait()
-    tx = await cwbtc._setMaxProtectionComposition(500);
+    tx = await mwbtc._setMaxProtectionComposition(500);
     await tx.wait()
-    tx = await cusdc._setMaxProtectionComposition(10000);
+    tx = await musdc._setMaxProtectionComposition(10000);
     await tx.wait()
-    tx = await cunn._setMaxProtectionComposition(2500);
+    tx = await munn._setMaxProtectionComposition(2500);
     await tx.wait()
-    tx = await cmoar._setMaxProtectionComposition(2500);
+    tx = await mmoar._setMaxProtectionComposition(2500);
     await tx.wait()
-    tx = await ceth._setMaxProtectionComposition(7600);
+    tx = await meth._setMaxProtectionComposition(7600);
     await tx.wait()
     console.log("Finished\n")
 
     console.log("Setting ReserveFactor")
-    tx = await cdai._setReserveFactor(tokens('0.1'))
+    tx = await mdai._setReserveFactor(tokens('0.1'))
     await tx.wait()
-    tx = await cwbtc._setReserveFactor(tokens('0.2'))
+    tx = await mwbtc._setReserveFactor(tokens('0.2'))
     await tx.wait()
-    tx = await cusdc._setReserveFactor(tokens('0.1'))
+    tx = await musdc._setReserveFactor(tokens('0.1'))
     await tx.wait()
-    tx = await cunn._setReserveFactor(tokens('0.35'))
+    tx = await munn._setReserveFactor(tokens('0.35'))
     await tx.wait()
-    tx = await cmoar._setReserveFactor(tokens('0.35'))
+    tx = await mmoar._setReserveFactor(tokens('0.35'))
     await tx.wait()
-    tx = await ceth._setReserveFactor(tokens('0.2'))
+    tx = await meth._setReserveFactor(tokens('0.2'))
     await tx.wait()
     console.log("Finished\n")
 
     console.log("Setting oracle prices")
-    tx = await oracle.setUnderlyingPrice(ceth.address, '1750000000000000000000')
+    tx = await oracle.setUnderlyingPrice(meth.address, '1750000000000000000000')
     await tx.wait()
-    tx = await oracle.setUnderlyingPrice(cwbtc.address, '550000000000000000000000000000000')
+    tx = await oracle.setUnderlyingPrice(mwbtc.address, '550000000000000000000000000000000')
     await tx.wait()
-    tx = await oracle.setUnderlyingPrice(cusdc.address, '1000000000000000000000000000000')
+    tx = await oracle.setUnderlyingPrice(musdc.address, '1000000000000000000000000000000')
     await tx.wait()
-    tx = await oracle.setUnderlyingPrice(cunn.address, '90000000000000000')
+    tx = await oracle.setUnderlyingPrice(munn.address, '90000000000000000')
     await tx.wait()
-    tx = await oracle.setUnderlyingPrice(cmoar.address, '3000000000000000000')
+    tx = await oracle.setUnderlyingPrice(mmoar.address, '3000000000000000000')
     await tx.wait()
     console.log("Finished\n")
 
     console.log("Setting moartroller configuration")
+    tx = await moartroller._setMoarToken(moar.address)
+    await tx.wait()
     tx = await moartroller._setPriceOracle(oracle.address)
     await tx.wait()
     tx = await moartroller._setProtection(cuunn.address)
@@ -199,32 +201,32 @@ async function main() {
     console.log("Finished\n")
 
     console.log("Setting moartroller supported markets")
-    tx = await moartroller._supportMarket(cdai.address)
+    tx = await moartroller._supportMarket(mdai.address)
     await tx.wait()
-    tx = await moartroller._supportMarket(cwbtc.address)
+    tx = await moartroller._supportMarket(mwbtc.address)
     await tx.wait()
-    tx = await moartroller._supportMarket(cusdc.address)
+    tx = await moartroller._supportMarket(musdc.address)
     await tx.wait()
-    tx = await moartroller._supportMarket(cunn.address)
+    tx = await moartroller._supportMarket(munn.address)
     await tx.wait()
-    tx = await moartroller._supportMarket(cmoar.address)
+    tx = await moartroller._supportMarket(mmoar.address)
     await tx.wait()
-    tx = await moartroller._supportMarket(ceth.address)
+    tx = await moartroller._supportMarket(meth.address)
     await tx.wait()
     console.log("Finished\n")
 
     console.log("Setting Collateral Factors")
-    tx = await moartroller._setCollateralFactor(cdai.address, tokens('0.85'))
+    tx = await moartroller._setCollateralFactor(mdai.address, tokens('0.85'))
     await tx.wait()
-    tx = await moartroller._setCollateralFactor(cwbtc.address, tokens('0.75'))
+    tx = await moartroller._setCollateralFactor(mwbtc.address, tokens('0.75'))
     await tx.wait()
-    tx = await moartroller._setCollateralFactor(cusdc.address, tokens('0.85'))
+    tx = await moartroller._setCollateralFactor(musdc.address, tokens('0.85'))
     await tx.wait()
-    tx = await moartroller._setCollateralFactor(cunn.address, tokens('1'))
+    tx = await moartroller._setCollateralFactor(munn.address, tokens('1'))
     await tx.wait()
-    tx = await moartroller._setCollateralFactor(cmoar.address, tokens('1.25'))
+    tx = await moartroller._setCollateralFactor(mmoar.address, tokens('1.25'))
     await tx.wait()
-    tx = await moartroller._setCollateralFactor(ceth.address, tokens('0.75'))
+    tx = await moartroller._setCollateralFactor(meth.address, tokens('0.75'))
     await tx.wait()
     console.log("Finished\n")
 
@@ -237,50 +239,29 @@ async function main() {
     // MAXIMILLION
 
     console.log("Deploying Maximillion")
-    maximillion = await setupMaximillion(ceth.address)
+    maximillion = await setupMaximillion(meth.address)
     console.log("Maximillion deployed!\n")
 
-    console.log('REACT_APP_C_ETHEREUM='+ ceth.address)
+    console.log('REACT_APP_M_ETHEREUM='+ meth.address)
     console.log('REACT_APP_W_ETH='+ wEthAddress)
     console.log('REACT_APP_DAI='+ dai.address)
-    console.log('REACT_APP_C_DAI='+ cdai.address)
+    console.log('REACT_APP_M_DAI='+ mdai.address)
     console.log('REACT_APP_MOAR='+ moar.address)
-    console.log('REACT_APP_C_MOAR='+ cmoar.address)
+    console.log('REACT_APP_M_MOAR='+ mmoar.address)
     console.log('REACT_APP_UNION='+ unn.address)
-    console.log('REACT_APP_C_UNION='+ cunn.address)
+    console.log('REACT_APP_M_UNION='+ munn.address)
     console.log('REACT_APP_UUNION='+ uUnnAddress)
-    console.log('REACT_APP_C_UUNION='+ cuunn.address)
+    console.log('REACT_APP_M_UUNION='+ cuunn.address)
     console.log('REACT_APP_USDC='+ usdc.address)
-    console.log('REACT_APP_C_USDC='+ cusdc.address)
+    console.log('REACT_APP_M_USDC='+ musdc.address)
     console.log('REACT_APP_WBTC='+ wbtc.address)
-    console.log('REACT_APP_C_WBTC='+ cwbtc.address)
+    console.log('REACT_APP_M_WBTC='+ mwbtc.address)
     console.log('REACT_APP_MOARTROLLER='+ moartroller.address)
     console.log('REACT_APP_ORACLE='+ oracle.address)
     console.log('REACT_APP_MAXIMILLION='+ maximillion.address)
     console.log('REACT_APP_UNION_ROUTER='+ unionRouter)
     console.log('REACT_APP_LENDING_ROUTER='+ lendingRouter.address)
 
-
-
-    // console.log(
-    //    {
-    //     "DAI address": dai.address,
-    //     "WBTC address": wbtc.address,
-    //     "USDC address": usdc.address,
-    //     "UNN address": unn.address,
-    //     "cDAI address": cdai.address,
-    //     "cWBTC address": cwbtc.address,
-    //     "cUSDC address": cusdc.address,
-    //     "cUNN address": cunn.address,
-    //     "cEther address": ceth.address,
-    //     "uUNN address": uUnnAddress,
-    //     "cuUNN address": cuunn.address,
-    //     "Moartroller address": moartroller.address,
-    //     "Oracle address": oracle.address,
-    //     "Maximillion address": maximillion.address,
-    //     "LendingRouter address": lendingRouter.address
-    //    }
-    // )
 }   
 
 main()

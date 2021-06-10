@@ -26,7 +26,7 @@ abstract contract MTokenStorage {
     uint8 public decimals;
 
     /**
-     * @notice Underlying asset for this CToken
+     * @notice Underlying asset for this MToken
      */
     address public underlying;
 
@@ -52,7 +52,7 @@ abstract contract MTokenStorage {
     address payable public pendingAdmin;
 
     /**
-     * @dev Contract which oversees inter-cToken operations
+     * @dev Contract which oversees inter-mToken operations
      */
     Moartroller public moartroller;
 
@@ -62,7 +62,7 @@ abstract contract MTokenStorage {
     AbstractInterestRateModel public interestRateModel;
 
     /**
-     * @dev Initial exchange rate used when minting the first CTokens (used when totalSupply = 0)
+     * @dev Initial exchange rate used when minting the first MTokens (used when totalSupply = 0)
      */
     uint internal initialExchangeRateMantissa;
 
@@ -99,12 +99,12 @@ abstract contract MTokenStorage {
     /**
      * @dev The Maximum Protection Moarosition (MPC) factor for collateral optimisation, default: 50% = 5000
      */
-    uint public maxProtectionMoarosition = 5000;
+    uint public maxProtectionComposition = 5000;
 
     /**
      * @dev The Maximum Protection Moarosition (MPC) mantissa, default: 1e5
      */
-    uint public maxProtectionMoarositionMantissa = 1e4;
+    uint public maxProtectionCompositionMantissa = 1e4;
 
     /**
      * @dev Official record of token balances for each account

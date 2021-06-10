@@ -2,8 +2,6 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
 
-import "hardhat/console.sol";
-
 import "./Interfaces/LiquidityMathModelInterface.sol";
 import "./MToken.sol";
 import "./Utils/ErrorReporter.sol";
@@ -60,9 +58,9 @@ contract LiquidityMathModelV1 is LiquidityMathModelInterface, LiquidityMathModel
         uint256 hypotheticalOptimizableValue = div_(
             mul_(
                 assetValue,
-                arguments.asset.maxProtectionMoarosition()
+                arguments.asset.maxProtectionComposition()
             ),
-            arguments.asset.maxProtectionMoarositionMantissa()
+            arguments.asset.maxProtectionCompositionMantissa()
         );
         return hypotheticalOptimizableValue;
     }

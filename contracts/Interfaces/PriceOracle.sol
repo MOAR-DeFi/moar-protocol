@@ -5,10 +5,10 @@ import "../MToken.sol";
 
 interface PriceOracle {
     /**
-      * @notice Get the underlying price of a cToken asset
-      * @param cToken The cToken to get the underlying price of
+      * @notice Get the underlying price of a mToken asset
+      * @param mToken The mToken to get the underlying price of
       * @return The underlying asset price mantissa (scaled by 1e18).
       *  Zero means the price is unavailable.
       */
-    function getUnderlyingPrice(MToken cToken) external view returns (uint);
+    function getUnderlyingPrice(MToken mToken) external view returns (uint);
 }

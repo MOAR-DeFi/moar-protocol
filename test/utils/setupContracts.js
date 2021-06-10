@@ -56,29 +56,29 @@ const setupAllTokens = async function () {
 const setupMToken = async function (name, symbol, decimals, exchangeRate, underlyingAsset, moartroller, interestRateModel) {
     const [owner] = await ethers.getSigners(13)
     const MToken = await ethers.getContractFactory('MErc20Immutable')
-    ctoken = await MToken.deploy(underlyingAsset.address, moartroller.address, interestRateModel.address, exchangeRate, name, symbol, decimals, owner.address)
-    await ctoken.deployed()
+    mtoken = await MToken.deploy(underlyingAsset.address, moartroller.address, interestRateModel.address, exchangeRate, name, symbol, decimals, owner.address)
+    await mtoken.deployed()
 
-    return ctoken
+    return mtoken
 }
 
-const setupCEther = async function (name, symbol, decimals, exchangeRate, underlyingAsset, moartroller, interestRateModel){
+const setupMEther = async function (name, symbol, decimals, exchangeRate, underlyingAsset, moartroller, interestRateModel){
     const [owner] = await ethers.getSigners(13)
     const MWeth = await ethers.getContractFactory("MWeth")
-    cether = await MWeth.deploy(underlyingAsset.address, moartroller.address, interestRateModel.address, exchangeRate, name, symbol, decimals, owner.address)
-    await cether.deployed()
+    mether = await MWeth.deploy(underlyingAsset.address, moartroller.address, interestRateModel.address, exchangeRate, name, symbol, decimals, owner.address)
+    await mether.deployed()
 
-    return cether
+    return mether
 }
 
 const setupAllMTokens = async function (tokensAddresses, platformAddresses) {
     const [owner] = await ethers.getSigners(13)
     return {
-        cdai: await setupMToken('cToken DAI', 'cDAI', 18, tokens('0.02'), tokensAddresses.dai, platformAddresses.moartroller, platformAddresses.interestRateModel),
-        cwbtc: await setupMToken('cToken WBTC', 'cWBTC', 8, tokens('0.02'), tokensAddresses.wbtc, platformAddresses.moartroller, platformAddresses.interestRateModel),
-        cusdc: await setupMToken('cToken USDC', 'cUSDC', 6, tokens('0.02'), tokensAddresses.usdc, platformAddresses.moartroller, platformAddresses.interestRateModel),
-        cunn: await setupMToken('cToken TUNN', 'cUNN', 18, tokens('0.02'), tokensAddresses.unn, platformAddresses.moartroller, platformAddresses.interestRateModel),
-        ceth: await setupCEther('cEther', 'cETH', 18, tokens('0.02'), tokensAddresses.weth, platformAddresses.moartroller, platformAddresses.interestRateModel)
+        mdai: await setupMToken('mToken DAI', 'mDAI', 18, tokens('0.02'), tokensAddresses.dai, platformAddresses.moartroller, platformAddresses.interestRateModel),
+        mwbtc: await setupMToken('mToken WBTC', 'mWBTC', 8, tokens('0.02'), tokensAddresses.wbtc, platformAddresses.moartroller, platformAddresses.interestRateModel),
+        musdc: await setupMToken('mToken USDC', 'mUSDC', 6, tokens('0.02'), tokensAddresses.usdc, platformAddresses.moartroller, platformAddresses.interestRateModel),
+        munn: await setupMToken('mToken TUNN', 'mUNN', 18, tokens('0.02'), tokensAddresses.unn, platformAddresses.moartroller, platformAddresses.interestRateModel),
+        meth: await setupMEther('mEther', 'mETH', 18, tokens('0.02'), tokensAddresses.weth, platformAddresses.moartroller, platformAddresses.interestRateModel)
     }
 }
 
@@ -105,12 +105,12 @@ const setupPlatformContracts = async function (tokensAddresses) {
     copMapping = await CopMapping.deploy(uUnnAddress)
     await copMapping.deployed()
 
-    const cuUNN = await ethers.getContractFactory("MProtection")
-    cuunn = await cuUNN.deploy(copMapping.address, moartroller.address)
-    await cuunn.deployed()
+    const muUNN = await ethers.getContractFactory("MProtection")
+    muunn = await muUNN.deploy(copMapping.address, moartroller.address)
+    await muunn.deployed()
 
-    const UnnLendingRouter = await ethers.getContractFactory("UnnLendingRouter")
-    lendingRouter = await UnnLendingRouter.deploy(uunn.address, cuunn.address, tokensAddresses.dai.address)
+    const LendingRouter = await ethers.getContractFactory("LendingRouter")
+    lendingRouter = await LendingRouter.deploy(uunn.address, muunn.address, tokensAddresses.dai.address)
     await lendingRouter.deployed()
 
     return {
@@ -120,51 +120,51 @@ const setupPlatformContracts = async function (tokensAddresses) {
         liquidityMathModel: liquidityMathModelV1,
         lendingRouter: lendingRouter,
         uunn: uunn,
-        cuunn: cuunn
+        muunn: muunn
     }
 }
 
-const setupMaximillion = async function(cEtherAddress){
+const setupMaximillion = async function(mEtherAddress){
     const Maximillion = await ethers.getContractFactory("Maximillion")
-    maximillion = await Maximillion.deploy(cEtherAddress)
+    maximillion = await Maximillion.deploy(mEtherAddress)
     await maximillion.deployed()
 
     return maximillion
 }
 
 const loadDefaultSettings = async function (platformContracts, allTokens, allMTokens) {
-    await platformContracts.oracle.setUnderlyingPrice(allMTokens.ceth.address, '1750000000000000000000')
-    await platformContracts.oracle.setUnderlyingPrice(allMTokens.cwbtc.address, '550000000000000000000000000000000')
-    await platformContracts.oracle.setUnderlyingPrice(allMTokens.cusdc.address, '1000000000000000000000000000000')
-    await platformContracts.oracle.setUnderlyingPrice(allMTokens.cunn.address, '90000000000000000')
+    await platformContracts.oracle.setUnderlyingPrice(allMTokens.meth.address, '1750000000000000000000')
+    await platformContracts.oracle.setUnderlyingPrice(allMTokens.mwbtc.address, '550000000000000000000000000000000')
+    await platformContracts.oracle.setUnderlyingPrice(allMTokens.musdc.address, '1000000000000000000000000000000')
+    await platformContracts.oracle.setUnderlyingPrice(allMTokens.munn.address, '90000000000000000')
 
     await platformContracts.moartroller._setPriceOracle(platformContracts.oracle.address)
-    await platformContracts.moartroller._setProtection(platformContracts.cuunn.address)
+    await platformContracts.moartroller._setProtection(platformContracts.muunn.address)
 
-    await allMTokens.cdai._setMaxProtectionComposition(2500);
-    await allMTokens.cwbtc._setMaxProtectionComposition(2500);
-    await allMTokens.cusdc._setMaxProtectionComposition(2500);
-    await allMTokens.cunn._setMaxProtectionComposition(2500);
-    await allMTokens.ceth._setMaxProtectionComposition(2500);
+    await allMTokens.mdai._setMaxProtectionComposition(2500);
+    await allMTokens.mwbtc._setMaxProtectionComposition(2500);
+    await allMTokens.musdc._setMaxProtectionComposition(2500);
+    await allMTokens.munn._setMaxProtectionComposition(2500);
+    await allMTokens.meth._setMaxProtectionComposition(2500);
 
-    await platformContracts.moartroller._supportMarket(allMTokens.cdai.address)
-    await platformContracts.moartroller._supportMarket(allMTokens.cwbtc.address)
-    await platformContracts.moartroller._supportMarket(allMTokens.cusdc.address)
-    await platformContracts.moartroller._supportMarket(allMTokens.cunn.address)
-    await platformContracts.moartroller._supportMarket(allMTokens.ceth.address)
+    await platformContracts.moartroller._supportMarket(allMTokens.mdai.address)
+    await platformContracts.moartroller._supportMarket(allMTokens.mwbtc.address)
+    await platformContracts.moartroller._supportMarket(allMTokens.musdc.address)
+    await platformContracts.moartroller._supportMarket(allMTokens.munn.address)
+    await platformContracts.moartroller._supportMarket(allMTokens.meth.address)
 
-    await platformContracts.moartroller._setCollateralFactor(allMTokens.cdai.address, tokens('0.9'))
-    await platformContracts.moartroller._setCollateralFactor(allMTokens.cwbtc.address, tokens('0.6'))
-    await platformContracts.moartroller._setCollateralFactor(allMTokens.cusdc.address, tokens('0.9'))
-    await platformContracts.moartroller._setCollateralFactor(allMTokens.cunn.address, tokens('0.4'))
-    await platformContracts.moartroller._setCollateralFactor(allMTokens.ceth.address, tokens('0.5'))
+    await platformContracts.moartroller._setCollateralFactor(allMTokens.mdai.address, tokens('0.9'))
+    await platformContracts.moartroller._setCollateralFactor(allMTokens.mwbtc.address, tokens('0.6'))
+    await platformContracts.moartroller._setCollateralFactor(allMTokens.musdc.address, tokens('0.9'))
+    await platformContracts.moartroller._setCollateralFactor(allMTokens.munn.address, tokens('0.4'))
+    await platformContracts.moartroller._setCollateralFactor(allMTokens.meth.address, tokens('0.5'))
 }
 
 module.exports = {
     setupToken,
     setupAllTokens,
     setupMToken,
-    setupCEther,
+    setupMEther,
     setupAllMTokens,
     setupPlatformContracts,
     loadDefaultSettings,

@@ -28,6 +28,12 @@ const increaseTime = async (x) => {
     await ethers.provider.send("evm_mine")
 }
 
+const advanceBlock = async (x) => {
+    for(let i=0; i<x; i++){
+        await ethers.provider.send("evm_mine")
+    }
+}
+
 const getTime = async () => {
     const latestBlock = await ethers.provider.getBlock('latest')
     return latestBlock.timestamp
@@ -62,6 +68,7 @@ module.exports = {
     toTokens,
     fromTokens,
     increaseTime,
+    advanceBlock,
     getTime,
     keccak256,
     toUtf8Bytes,

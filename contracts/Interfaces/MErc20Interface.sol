@@ -12,7 +12,7 @@ interface MErc20Interface {
     function borrowFor(address payable borrower, uint borrowAmount) external returns (uint);
     function repayBorrow(uint repayAmount) external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
-    function liquidateBorrow(address borrower, uint repayAmount, MToken cTokenCollateral) external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, MToken mTokenCollateral) external returns (uint);
 
     /*** Admin Functions ***/
     function _addReserves(uint addAmount) external returns (uint);

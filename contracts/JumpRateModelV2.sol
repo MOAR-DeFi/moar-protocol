@@ -6,7 +6,7 @@ import "./Interfaces/InterestRateModelInterface.sol";
 
 
 /**
-  * @title MOAR's JumpRateModel Contract V2 for V2 cTokens
+  * @title MOAR's JumpRateModel Contract V2 for V2 mTokens
   * @notice Supports only for V2 mTokens
   */
 contract JumpRateModelV2 is BaseJumpRateModelV2  {

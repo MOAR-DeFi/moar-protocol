@@ -6,13 +6,13 @@ import "./Moartroller.sol";
 import "./AbstractInterestRateModel.sol";
 
 /**
- * @title MOAR's CEther Contract
- * @notice CToken which wraps Ether
+ * @title MOAR's MEther Contract
+ * @notice MToken which wraps Ether
  * @author MOAR
  */
 contract MEther is MToken {
     /**
-     * @notice Construct a new CEther money market
+     * @notice Construct a new MEther money market
      * @param moartroller_ The address of the Moartroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
@@ -41,7 +41,7 @@ contract MEther is MToken {
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
+     * @notice Sender supplies assets into the market and receives mTokens in exchange
      * @dev Reverts upon any failure
      */
     function mint() external payable {
@@ -50,9 +50,9 @@ contract MEther is MToken {
     }
 
     /**
-     * @notice Sender redeems cTokens in exchange for the underlying asset
+     * @notice Sender redeems mTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of cTokens to redeem into underlying
+     * @param redeemTokens The number of mTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint redeemTokens) external returns (uint) {
@@ -60,7 +60,7 @@ contract MEther is MToken {
     }
 
     /**
-     * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems mTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -105,16 +105,16 @@ contract MEther is MToken {
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
      * @dev Reverts upon any failure
-     * @param borrower The borrower of this cToken to be liquidated
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this mToken to be liquidated
+     * @param mTokenCollateral The market in which to seize collateral from the borrower
      */
-    function liquidateBorrow(address borrower, MToken cTokenCollateral) external payable {
-        (uint err,) = liquidateBorrowInternal(borrower, msg.value, cTokenCollateral);
+    function liquidateBorrow(address borrower, MToken mTokenCollateral) external payable {
+        (uint err,) = liquidateBorrowInternal(borrower, msg.value, mTokenCollateral);
         requireNoError(err, "liquidateBorrow failed");
     }
 
     /**
-     * @notice Send Ether to CEther to mint
+     * @notice Send Ether to MEther to mint
      */
     receive () external payable {
         (uint err,) = mintInternal(msg.value);

@@ -6,8 +6,8 @@ import "./Moartroller.sol";
 import "./AbstractInterestRateModel.sol";
 
 /**
- * @title MOAR's CErc20Immutable Contract
- * @notice CTokens which wrap an EIP-20 underlying and are immutable
+ * @title MOAR's MErc20Immutable Contract
+ * @notice MTokens which wrap an EIP-20 underlying and are immutable
  * @author MOAR
  */
 contract MErc20Immutable is MErc20 {

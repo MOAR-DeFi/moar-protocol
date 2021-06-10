@@ -4,8 +4,8 @@ pragma solidity >=0.6.2 <0.8.0;
 
 interface IPool{
     function unlockPremium(uint256[] calldata _ids) external;
-    function getBasicToken() external view returns (address);
-    function getBasicTokenDecimals() external view returns (uint256);
+    function getBasimToken() external view returns (address);
+    function getBasimTokenDecimals() external view returns (uint256);
     function getPoolStat() external view returns (uint256, uint256, uint256,uint256, uint256, uint64, uint256);
     function version() external view returns (uint32);
 }

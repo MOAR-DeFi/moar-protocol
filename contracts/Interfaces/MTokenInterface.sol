@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.6.12;
 
+import "./EIP20NonStandardInterface.sol";
+
 interface MTokenInterface {
     /*** User contract ***/
     function transfer(address dst, uint256 amount) external returns (bool);
@@ -16,6 +18,9 @@ interface MTokenInterface {
     function borrowBalanceCurrent(address account) external returns (uint);
     function getCash() external view returns (uint);
     function seize(address liquidator, address borrower, uint seizeTokens) external returns (uint);
+    function getUnderlying() external view returns(address);
+    function sweepToken(EIP20NonStandardInterface token) external;
+
 
     /*** Admin Functions ***/
     function _setPendingAdmin(address payable newPendingAdmin) external returns (uint);

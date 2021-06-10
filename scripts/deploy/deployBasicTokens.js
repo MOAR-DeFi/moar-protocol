@@ -1,4 +1,4 @@
-const { setupToken, setupMToken, setupCEther, setupMaximillion } = require('./../../test/utils/setupContracts')
+const { setupToken, setupMToken, setupMEther, setupMaximillion } = require('./../../test/utils/setupContracts')
 const { tokens } = require('./../../test/utils/testHelpers')
 
 let owner, user1, user2, user3, user4

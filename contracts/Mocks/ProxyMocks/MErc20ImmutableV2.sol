@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.6.12;
 
-import "./CErc20.sol";
-import "./Moartroller.sol";
-import "./AbstractInterestRateModel.sol";
+import "../../CErc20.sol";
+import "../../Moartroller.sol";
+import "../../AbstractInterestRateModel.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "./Interfaces/Versionable.sol";
+import "../../Interfaces/Versionable.sol";
 
 /**
  * @title MOAR's MErc20Immutable Contract
  * @notice MTokens which wrap an EIP-20 underlying and are immutable
  * @author MOAR
  */
-contract MErc20Immutable is MErc20, Initializable, Versionable {
+contract MErc20ImmutableV2 is MErc20, Initializable, Versionable {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -31,7 +31,7 @@ contract MErc20Immutable is MErc20, Initializable, Versionable {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                address payable admin_) public initializer {
+                address payable admin_) public {
         // Creator of the contract is admin during initialization
         admin = msg.sender;
 
@@ -43,6 +43,6 @@ contract MErc20Immutable is MErc20, Initializable, Versionable {
     }
 
     function getContractVersion() external override pure returns(string memory){
-        return "V1";
+        return "V2";
     }
 }

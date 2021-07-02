@@ -1,5 +1,6 @@
 const { setupToken, setupMToken, setupMEther, setupMaximillion } = require('./../../test/utils/setupContracts')
 const { tokens } = require('./../../test/utils/testHelpers')
+const { ethers, upgrades } = require('hardhat');
 
 let owner, user1, user2, user3, user4
 let oracle, moartroller, liquidityMathModelV1, cuunn, maximillion, lendingRouter
@@ -68,7 +69,7 @@ async function main() {
 
     console.log("Deploying Moartroller")
     const Moartroller = await ethers.getContractFactory("Moartroller")
-    moartroller = await Moartroller.deploy(liquidityMathModelV1.address)
+    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address]);
     await moartroller.deployed()
     console.log("Moartroller deployed!\n")
 
@@ -107,7 +108,7 @@ async function main() {
 
     console.log("Deploying cuUNN")
     const cuUNN = await ethers.getContractFactory("MProtection")
-    cuunn = await cuUNN.deploy(copMapping.address, moartroller.address)
+    cuunn = await upgrades.deployProxy(cuUNN, [copMapping.address, moartroller.address]);
     await cuunn.deployed()
     console.log("cuUNN deployed!\n")
 

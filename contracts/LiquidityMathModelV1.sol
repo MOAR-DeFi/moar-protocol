@@ -9,6 +9,7 @@ import "./Utils/ExponentialNoError.sol";
 import "./Utils/AssetHelpers.sol";
 import "./Moartroller.sol";
 import "./SimplePriceOracle.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 contract LiquidityMathModelV1 is LiquidityMathModelInterface, LiquidityMathModelErrorReporter, ExponentialNoError, Ownable, AssetHelpers {

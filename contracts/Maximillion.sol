@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.6.12;
 
-import "./MEther.sol";
+import "./MWeth.sol";
 
 /**
  * @title MOAR's Maximillion Contract
@@ -10,12 +10,12 @@ contract Maximillion {
     /**
      * @notice The default mEther market to repay in
      */
-    MEther public mEther;
+    MWeth public mEther;
 
     /**
      * @notice Construct a Maximillion to repay max in a MEther market
      */
-    constructor(MEther mEther_) public {
+    constructor(MWeth mEther_) public {
         mEther = mEther_;
     }
 
@@ -34,7 +34,7 @@ contract Maximillion {
      * @param borrower The address of the borrower account to repay on behalf of
      * @param mEther_ The address of the mEther contract to repay in
      */
-    function repayBehalfExplicit(address borrower, MEther mEther_) public payable {
+    function repayBehalfExplicit(address borrower, MWeth mEther_) public payable {
         uint received = msg.value;
         uint borrows = mEther_.borrowBalanceCurrent(borrower);
         if (received > borrows) {

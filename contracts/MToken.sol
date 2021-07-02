@@ -121,7 +121,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
      */
-    function initialize(Moartroller moartroller_,
+    function init(Moartroller moartroller_,
                         AbstractInterestRateModel interestRateModel_,
                         uint initialExchangeRateMantissa_,
                         string memory name_,
@@ -154,6 +154,9 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         _notEntered = true;
 
         maxProtectionComposition = 5000;
+        maxProtectionCompositionMantissa = 1e4;
+        reserveFactorMaxMantissa = 1e18;
+        borrowRateMaxMantissa = 0.0005e16;
     }
 
     /**

@@ -56,7 +56,7 @@ const setupAllTokens = async function () {
 const setupMToken = async function (name, symbol, decimals, exchangeRate, underlyingAsset, moartroller, interestRateModel) {
     const [owner] = await ethers.getSigners(13)
     const MToken = await ethers.getContractFactory('MErc20Immutable')
-    mtoken = await MToken.deploy(underlyingAsset.address, moartroller.address, interestRateModel.address, exchangeRate, name, symbol, decimals, owner.address)
+    mtoken = await upgrades.deployProxy(MToken, [underlyingAsset.address, moartroller.address, interestRateModel.address, exchangeRate, name, symbol, decimals, owner.address]);
     await mtoken.deployed()
 
     return mtoken
@@ -94,7 +94,7 @@ const setupPlatformContracts = async function (tokensAddresses) {
     await liquidityMathModelV1.deployed()
 
     const Moartroller = await ethers.getContractFactory("Moartroller")
-    moartroller = await Moartroller.deploy(liquidityMathModelV1.address)
+    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address]);
     await moartroller.deployed()
 
     const JumpRateModelV2 = await ethers.getContractFactory("JumpRateModelV2")
@@ -106,7 +106,7 @@ const setupPlatformContracts = async function (tokensAddresses) {
     await copMapping.deployed()
 
     const muUNN = await ethers.getContractFactory("MProtection")
-    muunn = await muUNN.deploy(copMapping.address, moartroller.address)
+    muunn = await upgrades.deployProxy(muUNN, [copMapping.address, moartroller.address]);
     await muunn.deployed()
 
     const LendingRouter = await ethers.getContractFactory("LendingRouter")

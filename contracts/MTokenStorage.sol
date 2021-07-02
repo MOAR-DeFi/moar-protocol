@@ -34,12 +34,12 @@ abstract contract MTokenStorage {
      * @dev Maximum borrow rate that can ever be applied (.0005% / block)
      */
 
-    uint internal constant borrowRateMaxMantissa = 0.0005e16;
+    uint internal borrowRateMaxMantissa;
 
     /**
      * @dev Maximum fraction of interest that can be set aside for reserves
      */
-    uint internal constant reserveFactorMaxMantissa = 1e18;
+    uint internal reserveFactorMaxMantissa;
 
     /**
      * @dev Administrator for this contract
@@ -99,12 +99,12 @@ abstract contract MTokenStorage {
     /**
      * @dev The Maximum Protection Moarosition (MPC) factor for collateral optimisation, default: 50% = 5000
      */
-    uint public maxProtectionComposition = 5000;
+    uint public maxProtectionComposition;
 
     /**
      * @dev The Maximum Protection Moarosition (MPC) mantissa, default: 1e5
      */
-    uint public maxProtectionCompositionMantissa = 1e4;
+    uint public maxProtectionCompositionMantissa;
 
     /**
      * @dev Official record of token balances for each account

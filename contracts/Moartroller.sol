@@ -10,8 +10,8 @@ import "./Utils/ErrorReporter.sol";
 import "./Utils/ExponentialNoError.sol";
 import "./Interfaces/PriceOracle.sol";
 import "./Interfaces/MoartrollerInterface.sol";
+import "./Interfaces/Versionable.sol";
 import "./MoartrollerStorage.sol";
-import "./Unitroller.sol";
 import "./Governance/UnionGovernanceToken.sol";
 import "./MProtection.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -22,10 +22,12 @@ import "./LiquidityMathModelV1.sol";
  * @title MOAR's Moartroller Contract
  * @author MOAR
  */
-contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerErrorReporter, ExponentialNoError {
+contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerErrorReporter, ExponentialNoError, Versionable {
 
     /// @notice Indicator that this is a Moartroller contract (for inspection)
     bool public constant isMoartroller = true;
+
+    bool public initialized;
 
     /// @notice Emitted when an admin supports a market
     event MarketListed(MToken mToken);
@@ -95,9 +97,12 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
     // No collateralFactorMantissa may exceed this value
     uint internal constant collateralFactorMaxMantissa = 0.9e18; // 0.9
 
-    constructor(LiquidityMathModelInterface mathModel) public {
+    // Custom initializer
+    function initialize(LiquidityMathModelInterface mathModel) public {
+        require(!initialized,"Contract already initialized");
         admin = msg.sender;
         liquidityMathModel = mathModel;
+        initialized = true;
     }
 
     /*** Assets You Are In ***/
@@ -1147,11 +1152,6 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         return state;
     }
 
-    function _become(Unitroller unitroller) public {
-        require(msg.sender == unitroller.admin(), "only unitroller admin can change brains");
-        require(unitroller._acceptImplementation() == 0, "change not authorized");
-    }
-
     /**
      * @notice Checks caller is admin, or this contract is becoming the new implementation
      */
@@ -1481,5 +1481,9 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      */
     function getMoarAddress() public view returns (address) {
         return moarToken;
+    }
+
+    function getContractVersion() external override pure returns(string memory){
+        return "V1";
     }
 }

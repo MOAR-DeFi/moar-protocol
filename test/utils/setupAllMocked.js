@@ -1,5 +1,6 @@
 const { setupToken, setupMToken, setupMEther, setupMaximillion  } = require('../utils/setupContracts')
 const { tokens } = require('../utils/testHelpers')
+const { ethers, upgrades } = require('hardhat');
 
 
 const setupAll = async function () {
@@ -44,7 +45,7 @@ const setupAll = async function () {
     await liquidityMathModelV1.deployed()
 
     const Moartroller = await ethers.getContractFactory("Moartroller")
-    moartroller = await Moartroller.deploy(liquidityMathModelV1.address)
+    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address]);
     await moartroller.deployed()
 
     const JumpRateModelV2 = await ethers.getContractFactory("JumpRateModelV2")
@@ -69,7 +70,7 @@ const setupAll = async function () {
     await copMapping.deployed()
 
     const muUNN = await ethers.getContractFactory("MProtection")
-    muunn = await muUNN.deploy(copMapping.address, moartroller.address)
+    muunn = await upgrades.deployProxy(muUNN, [copMapping.address, moartroller.address]);
     await muunn.deployed()
 
     // MTOKENS 

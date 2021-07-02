@@ -7,20 +7,20 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./Interfaces/CopMappingInterface.sol";
-import "./Interfaces/Versionable.sol";
-import "./Moartroller.sol";
-import "./Utils/ExponentialNoError.sol";
-import "./Utils/ErrorReporter.sol";
-import "./Utils/AssetHelpers.sol";
-import "./MToken.sol";
+import "../../Interfaces/CopMappingInterface.sol";
+import "../../Interfaces/Versionable.sol";
+import "../../Moartroller.sol";
+import "../../Utils/ExponentialNoError.sol";
+import "../../Utils/ErrorReporter.sol";
+import "../../Utils/AssetHelpers.sol";
+import "../../MToken.sol";
 
 /**
  * @title MOAR's MProtection Contract
  * @notice Collateral optimization ERC-721 wrapper
  * @author MOAR
  */
-contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoError, AssetHelpers, Versionable {
+contract MProtectionV2 is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoError, AssetHelpers, Versionable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -368,7 +368,7 @@ contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoErro
     }
 
     function getContractVersion() external override pure returns(string memory){
-        return "V1";
+        return "V2";
     }
 
 }

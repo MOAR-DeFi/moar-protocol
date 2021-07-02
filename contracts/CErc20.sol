@@ -21,7 +21,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
      */
-    function initialize(address underlying_,
+    function init(address underlying_,
                         Moartroller moartroller_,
                         AbstractInterestRateModel interestRateModel_,
                         uint initialExchangeRateMantissa_,
@@ -29,7 +29,7 @@ contract MErc20 is MToken, MErc20Interface {
                         string memory symbol_,
                         uint8 decimals_) public {
         // MToken initialize does the bulk of the work
-        super.initialize(moartroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        super.init(moartroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
@@ -120,7 +120,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)
      * @param token The address of the ERC-20 token to sweep
      */
-    function sweepToken(EIP20NonStandardInterface token) external {
+    function sweepToken(EIP20NonStandardInterface token) override external {
     	require(address(token) != underlying, "MErc20::sweepToken: can not sweep underlying token");
     	uint256 balance = token.balanceOf(address(this));
     	token.transfer(admin, balance);

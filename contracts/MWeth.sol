@@ -34,7 +34,7 @@ contract MWeth is MToken {
         // Creator of the contract is admin during initialization
         admin = msg.sender;
 
-        initialize(moartroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        init(moartroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
@@ -142,6 +142,16 @@ contract MWeth is MToken {
             (uint err,) = mintInternal(msg.value);
             requireNoError(err, "mint failed");
         }
+    }
+
+    /**
+     * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)
+     * @param token The address of the ERC-20 token to sweep
+     */
+    function sweepToken(EIP20NonStandardInterface token) override external {
+    	require(address(token) != underlying, "MErc20::sweepToken: can not sweep underlying token");
+    	uint256 balance = token.balanceOf(address(this));
+    	token.transfer(admin, balance);
     }
 
     /*** Safe Token ***/

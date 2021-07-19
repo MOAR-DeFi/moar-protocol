@@ -5,12 +5,17 @@ import "./MToken.sol";
 import "./Interfaces/MErc20Interface.sol";
 import "./Moartroller.sol";
 import "./AbstractInterestRateModel.sol";
+import "./Interfaces/EIP20Interface.sol";
+import "./Utils/SafeEIP20.sol";
 
 /**
  * @title MOAR's MErc20 Contract
  * @notice MTokens which wrap an EIP-20 underlying
  */
 contract MErc20 is MToken, MErc20Interface {
+
+    using SafeEIP20 for EIP20Interface;
+
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
@@ -93,7 +98,7 @@ contract MErc20 is MToken, MErc20Interface {
     }
 
     /**
-     * @notice Sender repays a borrow belonging to borrower
+     * @notice Sender repays a borrow belonging to borrower.
      * @param borrower the account with the debt being payed off
      * @param repayAmount The amount to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -120,10 +125,10 @@ contract MErc20 is MToken, MErc20Interface {
      * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)
      * @param token The address of the ERC-20 token to sweep
      */
-    function sweepToken(EIP20NonStandardInterface token) override external {
+    function sweepToken(EIP20Interface token) override external {
     	require(address(token) != underlying, "MErc20::sweepToken: can not sweep underlying token");
     	uint256 balance = token.balanceOf(address(this));
-    	token.transfer(admin, balance);
+    	token.safeTransfer(admin, balance);
     }
 
     /**
@@ -152,33 +157,17 @@ contract MErc20 is MToken, MErc20Interface {
      *      This will revert due to insufficient balance or insufficient allowance.
      *      This function returns the actual amount received,
      *      which may be less than `amount` if there is a fee attached to the transfer.
-     *
+     *`
      *      Note: This wrapper safely handles non-standard ERC-20 tokens that do not return a value.
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferIn(address from, uint amount) internal override returns (uint) {
-        EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
-        uint balanceBefore = EIP20Interface(underlying).balanceOf(address(this));
-        token.transferFrom(from, address(this), amount);
-
-        bool success;
-        assembly {
-            switch returndatasize()
-                case 0 {                       // This is a non-standard ERC-20
-                    success := not(0)          // set success to true
-                }
-                case 32 {                      // This is a compliant ERC-20
-                    returndatacopy(0, 0, 32)
-                    success := mload(0)        // Set `success = returndata` of external call
-                }
-                default {                      // This is an excessively non-compliant ERC-20, revert.
-                    revert(0, 0)
-                }
-        }
-        require(success, "TOKEN_TRANSFER_IN_FAILED");
+        EIP20Interface token = EIP20Interface(underlying);
+        uint balanceBefore = token.balanceOf(address(this));
+        token.safeTransferFrom(from, address(this), amount);
 
         // Calculate the amount that was *actually* transferred
-        uint balanceAfter = EIP20Interface(underlying).balanceOf(address(this));
+        uint balanceAfter = token.balanceOf(address(this));
         require(balanceAfter >= balanceBefore, "TOKEN_TRANSFER_IN_OVERFLOW");
         return balanceAfter - balanceBefore;   // underflow already checked above, just subtract
     }
@@ -193,23 +182,7 @@ contract MErc20 is MToken, MErc20Interface {
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferOut(address payable to, uint amount) internal override {
-        EIP20NonStandardInterface token = EIP20NonStandardInterface(underlying);
-        token.transfer(to, amount);
-
-        bool success;
-        assembly {
-            switch returndatasize()
-                case 0 {                      // This is a non-standard ERC-20
-                    success := not(0)          // set success to true
-                }
-                case 32 {                     // This is a complaint ERC-20
-                    returndatacopy(0, 0, 32)
-                    success := mload(0)        // Set `success = returndata` of external call
-                }
-                default {                     // This is an excessively non-compliant ERC-20, revert.
-                    revert(0, 0)
-                }
-        }
-        require(success, "TOKEN_TRANSFER_OUT_FAILED");
+        EIP20Interface token = EIP20Interface(underlying);
+        token.safeTransfer(to, amount);
     }
 }

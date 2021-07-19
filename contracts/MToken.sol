@@ -4,7 +4,6 @@ pragma solidity ^0.6.12;
 import "./Utils/ErrorReporter.sol";
 import "./Utils/Exponential.sol";
 import "./Interfaces/EIP20Interface.sol";
-import "./Interfaces/EIP20NonStandardInterface.sol";
 import "./MTokenStorage.sol";
 import "./Interfaces/MTokenInterface.sol";
 import "./Moartroller.sol";
@@ -1027,7 +1026,9 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         /* If repayAmount == -1, repayAmount = accountBorrows */
+        /* If the borrow is repaid by another user -1 cannot be used to prevent borrow front-running */
         if (repayAmount == uint(-1)) {
+            require(tx.origin != borrower, "MToken::repayBorrowFresh: Repaying a borrow in behalf requires to specify a precise amount");
             vars.repayAmount = vars.accountBorrows;
         } else {
             vars.repayAmount = repayAmount;

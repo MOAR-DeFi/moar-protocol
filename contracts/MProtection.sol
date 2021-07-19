@@ -6,7 +6,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Interfaces/CopMappingInterface.sol";
 import "./Interfaces/Versionable.sol";
 import "./Moartroller.sol";
@@ -14,6 +13,8 @@ import "./Utils/ExponentialNoError.sol";
 import "./Utils/ErrorReporter.sol";
 import "./Utils/AssetHelpers.sol";
 import "./MToken.sol";
+import "./Interfaces/EIP20Interface.sol";
+import "./Utils/SafeEIP20.sol";
 
 /**
  * @title MOAR's MProtection Contract

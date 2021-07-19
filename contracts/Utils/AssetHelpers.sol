@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.12;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../Interfaces/EIP20Interface.sol";
 
 contract AssetHelpers {
     /**
@@ -10,7 +10,7 @@ contract AssetHelpers {
     function getAssetDecimalsMantissa(address assetAddress) public view returns (uint256){
         uint assetDecimals = 1e18;
         if (assetAddress != address(0)) {
-            ERC20 token = ERC20(assetAddress);
+            EIP20Interface token = EIP20Interface(assetAddress);
             assetDecimals = 10 ** uint256(token.decimals());
         }
         return assetDecimals;

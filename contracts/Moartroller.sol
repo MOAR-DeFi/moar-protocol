@@ -14,15 +14,18 @@ import "./Interfaces/Versionable.sol";
 import "./MoartrollerStorage.sol";
 import "./Governance/UnionGovernanceToken.sol";
 import "./MProtection.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Interfaces/LiquidityMathModelInterface.sol";
 import "./LiquidityMathModelV1.sol";
+import "./Utils/SafeEIP20.sol";
+import "./Interfaces/EIP20Interface.sol";
 
 /**
  * @title MOAR's Moartroller Contract
  * @author MOAR
  */
 contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerErrorReporter, ExponentialNoError, Versionable {
+
+    using SafeEIP20 for EIP20Interface;
 
     /// @notice Indicator that this is a Moartroller contract (for inspection)
     bool public constant isMoartroller = true;
@@ -1363,10 +1366,10 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @return The amount of MOAR which was NOT transferred to the user
      */
     function grantMoarInternal(address user, uint amount) internal returns (uint) {
-        ERC20 moar = ERC20(getMoarAddress());
+        EIP20Interface moar = EIP20Interface(getMoarAddress());
         uint moarRemaining = moar.balanceOf(address(this));
         if (amount > 0 && amount <= moarRemaining) {
-            moar.transfer(user, amount);
+            moar.safeTransfer(user, amount);
             return 0;
         }
         return amount;

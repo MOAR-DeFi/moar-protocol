@@ -5,6 +5,8 @@ import "./MToken.sol";
 import "./Moartroller.sol";
 import "./AbstractInterestRateModel.sol";
 import "./Interfaces/WETHInterface.sol";
+import "./Interfaces/EIP20Interface.sol";
+import "./Utils/SafeEIP20.sol";
 
 /**
  * @title MOAR's MEther Contract
@@ -12,6 +14,9 @@ import "./Interfaces/WETHInterface.sol";
  * @author MOAR
  */
 contract MWeth is MToken {
+
+    using SafeEIP20 for EIP20Interface;
+
     /**
      * @notice Construct a new MEther money market
      * @param underlying_ The address of the underlying asset
@@ -148,10 +153,10 @@ contract MWeth is MToken {
      * @notice A public function to sweep accidental ERC-20 transfers to this contract. Tokens are sent to admin (timelock)
      * @param token The address of the ERC-20 token to sweep
      */
-    function sweepToken(EIP20NonStandardInterface token) override external {
+    function sweepToken(EIP20Interface token) override external {
     	require(address(token) != underlying, "MErc20::sweepToken: can not sweep underlying token");
     	uint256 balance = token.balanceOf(address(this));
-    	token.transfer(admin, balance);
+    	token.safeTransfer(admin, balance);
     }
 
     /*** Safe Token ***/

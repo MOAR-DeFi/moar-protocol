@@ -134,7 +134,7 @@ abstract contract MTokenStorage {
     /**
      * @dev Mapping of account addresses to outstanding borrow balances
      */
-    mapping(address => BorrowSnapshot) internal accountBorrows;
+    mapping(address => BorrowSnapshot) public accountBorrows;
 
 
 }

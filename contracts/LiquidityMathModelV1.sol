@@ -53,7 +53,7 @@ contract LiquidityMathModelV1 is LiquidityMathModelInterface, LiquidityMathModel
                 ),
                 arguments.oracle.getUnderlyingPrice(arguments.asset)
             ),
-            1e18
+            getAssetDecimalsMantissa(arguments.asset.getUnderlying())
         );
 
         uint256 hypotheticalOptimizableValue = div_(

@@ -19,13 +19,21 @@ const COP_3 = {
   strike: tokens('2350'),
   premium: tokens('50')
 }
+const COP_WBTC = {
+    amount: "700000000",
+    strike: tokens('60000'),
+    premium: tokens('70')
+}
 
  describe("MProtection", () => {
 
     before(async() => {
       app = await setupAll()
       await app.meth.connect(app.user1).mint({value: tokens('10')})
-      await app.moartroller.connect(app.user1).enterMarkets([meth.address])
+      await app.moartroller.connect(app.user1).enterMarkets([meth.address, mwbtc.address])
+
+        await app.moartroller._setCollateralFactor(app.mwbtc.address, tokens('0.5'))
+        await app.mwbtc._setMaxProtectionComposition(5000)
     })
   
     it("Create C-OP", async () => {
@@ -96,6 +104,28 @@ const COP_3 = {
     it('Get UserUnderlyingProtectionTokenIdByCurrency element by index', async () => {
       expect(await app.muunn.getUserUnderlyingProtectionTokenIdByCurrency(app.user1.address, app.weth.address, 0)).to.equal(2)
       expect(await app.muunn.getUserUnderlyingProtectionTokenIdByCurrency(app.user1.address, app.weth.address, 1)).to.equal(3)
+    })
+
+    it('Get UserUnderlyingProtectionTokenIdByCurrency element by index', async () => {
+        await app.wbtc.connect(app.user1).approve(app.mwbtc.address, '1000000000')
+        await app.mwbtc.connect(app.user1).mint('100000000')
+
+        await app.uunn.createProtection(app.user1.address, app.wbtc.address, COP_WBTC.amount, COP_WBTC.strike, COP_WBTC.premium)
+        expect(await app.uunn.balanceOf(app.user1.address)).to.equal(1)
+
+        await app.uunn.connect(app.user1).approve(app.muunn.address, 4)
+        await app.muunn.connect(app.user1).mint(4)
+        await app.muunn.connect(app.user1).lockProtectionValue(5, 0)
+
+        let cop = await app.muunn.getMappedProtectionData(5)
+        expect(cop.premium).to.equal(COP_WBTC.premium)
+        expect(cop.strike).to.equal(COP_WBTC.strike)
+        expect(cop.amount).to.equal(COP_WBTC.amount)
+        expect(cop.underlyingAsset).to.equal(app.wbtc.address)
+        expect(cop.lockedValue).to.equal(tokens("27500"))
+        expect(cop.isProtectionAlive).to.equal(true)
+
+        expect((await app.muunn.getUnderlyingProtectionLockedAmount(5)).toString()).to.equal("45833333")
     })
   })
   

@@ -141,7 +141,6 @@ describe("Liquidity Simulation 1", () => {
 
     // Take another borrow
     await expectNoEvent(app.mdai.connect(app.user1).borrow(tokens('500')), 'Borrow')
-
     accountLiquidity = (await app.moartroller.getAccountLiquidity(app.user1.address))[1]
     expect(accountLiquidity.toString()).to.equal(tokens('499.999994169936118000')) //interest fee applied
 

@@ -276,13 +276,13 @@ contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoErro
                     protectionValue
                 )
             ),
-            assetDecimalsMantissa
+            1e18
         );
     }
 
     /**
      * @notice Locks the given protection value as collateral optimization
-     * @param tokenId The CProtection token id
+     * @param tokenId The MProtection token id
      * @param value The value in stablecoin of protection to be locked as collateral optimization. 0 = max available optimization
      * @return locked protection value
      * TODO: convert semantic errors to standarized error codes

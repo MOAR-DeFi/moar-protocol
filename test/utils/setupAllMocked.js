@@ -102,8 +102,8 @@ const setupAll = async function () {
     await meth._setReserveFactor(tokens('0.2'))
 
     await oracle.setUnderlyingPrice(meth.address, '1750000000000000000000')
-    await oracle.setUnderlyingPrice(mwbtc.address, '550000000000000000000000000000000')
-    await oracle.setUnderlyingPrice(musdc.address, '1000000000000000000000000000000')
+    await oracle.setUnderlyingPrice(mwbtc.address, '55000000000000000000000')
+    await oracle.setUnderlyingPrice(musdc.address, '1000000000000000000')
     await oracle.setUnderlyingPrice(munn.address, '90000000000000000')
     await oracle.setUnderlyingPrice(mmoar.address, '3000000000000000000')
 

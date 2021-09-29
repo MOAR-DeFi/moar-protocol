@@ -6,6 +6,7 @@ import "./Utils/Exponential.sol";
 import "./Interfaces/EIP20Interface.sol";
 import "./MTokenStorage.sol";
 import "./Interfaces/MTokenInterface.sol";
+import "./Interfaces/MProxyInterface.sol";
 import "./Moartroller.sol";
 import "./AbstractInterestRateModel.sol";
 
@@ -126,12 +127,12 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
                         string memory name_,
                         string memory symbol_,
                         uint8 decimals_) public {
-        require(msg.sender == admin, "only admin may initialize the market");
-        require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
+        require(msg.sender == admin, "not_admin");
+        require(accrualBlockNumber == 0 && borrowIndex == 0, "already_init");
 
         // Set initial exchange rate
         initialExchangeRateMantissa = initialExchangeRateMantissa_;
-        require(initialExchangeRateMantissa > 0, "initial exchange rate must be greater than zero.");
+        require(initialExchangeRateMantissa > 0, "too_low");
 
         // Set the moartroller
         uint err = _setMoartroller(moartroller_);
@@ -143,7 +144,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         // Set the interest rate model (depends on block number / borrow index)
         err = _setInterestRateModelFresh(interestRateModel_);
-        require(err == uint(Error.NO_ERROR), "setting interest rate model failed");
+        require(err == uint(Error.NO_ERROR), "setting IRM failed");
 
         name = name_;
         symbol = symbol_;
@@ -293,7 +294,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
     function balanceOfUnderlying(address owner) external virtual override returns (uint) {
         Exp memory exchangeRate = Exp({mantissa: exchangeRateCurrent()});
         (MathError mErr, uint balance) = mulScalarTruncate(exchangeRate, accountTokens[owner]);
-        require(mErr == MathError.NO_ERROR, "balance could not be calculated");
+        require(mErr == MathError.NO_ERROR, "balance_calculation_failed");
         return balance;
     }
 
@@ -373,7 +374,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      */
     function borrowBalanceStored(address account) public virtual view returns (uint) {
         (MathError err, uint result) = borrowBalanceStoredInternal(account);
-        require(err == MathError.NO_ERROR, "borrowBalanceStored: borrowBalanceStoredInternal failed");
+        require(err == MathError.NO_ERROR, "borrowBalanceStored failed");
         return result;
     }
 
@@ -430,7 +431,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      */
     function exchangeRateStored() public virtual view returns (uint) {
         (MathError err, uint result) = exchangeRateStoredInternal();
-        require(err == MathError.NO_ERROR, "exchangeRateStored: exchangeRateStoredInternal failed");
+        require(err == MathError.NO_ERROR, "exchangeRateStored failed");
         return result;
     }
 
@@ -482,30 +483,25 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
     function getRealBorrowIndex() public view returns (uint) {
         uint currentBlockNumber = getBlockNumber();
         uint accrualBlockNumberPrior = accrualBlockNumber;
-
-        if (accrualBlockNumberPrior == currentBlockNumber) {
-            return uint(Error.NO_ERROR);
-        }
-
         uint cashPrior = getCashPrior();
         uint borrowsPrior = totalBorrows;
         uint reservesPrior = totalReserves;
         uint borrowIndexPrior = borrowIndex;
 
         uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
+        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate too high");
 
         (MathError mathErr, uint blockDelta) = subUInt(currentBlockNumber, accrualBlockNumberPrior);
-        require(mathErr == MathError.NO_ERROR, "could not calculate block delta");
+        require(mathErr == MathError.NO_ERROR, "could not calc block delta");
 
         Exp memory simpleInterestFactor;
         uint borrowIndexNew;
 
         (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
-        require(mathErr == MathError.NO_ERROR, "could not calculate simpleInterestFactor");
+        require(mathErr == MathError.NO_ERROR, "could not calc simpleInterestFactor");
 
         (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
-        require(mathErr == MathError.NO_ERROR, "could not calculate new borrowIndex");
+        require(mathErr == MathError.NO_ERROR, "could not calc borrowIndex");
 
         return borrowIndexNew;
     }
@@ -533,11 +529,11 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         /* Calculate the current borrow interest rate */
         uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate is absurdly high");
+        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate too high");
 
         /* Calculate the number of blocks elapsed since the last accrual */
         (MathError mathErr, uint blockDelta) = subUInt(currentBlockNumber, accrualBlockNumberPrior);
-        require(mathErr == MathError.NO_ERROR, "could not calculate block delta");
+        require(mathErr == MathError.NO_ERROR, "could not calc block delta");
 
         /*
          * Calculate the interest accumulated into borrows and reserves and the new index:
@@ -549,32 +545,44 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
          */
 
         Exp memory simpleInterestFactor;
-        uint interestAccumulated;
-        uint totalBorrowsNew;
-        uint totalReservesNew;
-        uint borrowIndexNew;
+        AccrueInterestTempStorage memory temp;
 
         (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
         if (mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_SIMPLE_INTEREST_FACTOR_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (mathErr, interestAccumulated) = mulScalarTruncate(simpleInterestFactor, borrowsPrior);
+        (mathErr, temp.interestAccumulated) = mulScalarTruncate(simpleInterestFactor, borrowsPrior);
         if (mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_ACCUMULATED_INTEREST_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (mathErr, totalBorrowsNew) = addUInt(interestAccumulated, borrowsPrior);
+        (mathErr, temp.totalBorrowsNew) = addUInt(temp.interestAccumulated, borrowsPrior);
         if (mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_BORROWS_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (mathErr, totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
-        if (mathErr != MathError.NO_ERROR) {
+        (mathErr, temp.reservesAdded) = mulScalarTruncate(Exp({mantissa: reserveFactorMantissa}), temp.interestAccumulated);
+        if(mathErr != MathError.NO_ERROR){
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
+        (mathErr, temp.splitedReserves_2) = mulScalarTruncate(Exp({mantissa: reserveSplitFactorMantissa}), temp.reservesAdded);
+        if(mathErr != MathError.NO_ERROR){
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
+        }
+
+        (mathErr, temp.splitedReserves_1) = subUInt(temp.reservesAdded, temp.splitedReserves_2);
+        if(mathErr != MathError.NO_ERROR){
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
+        }
+
+        (mathErr, temp.totalReservesNew) = addUInt(temp.splitedReserves_1, reservesPrior);
+        if(mathErr != MathError.NO_ERROR){
+            return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
+        }
+
+        (mathErr, temp.borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
         if (mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_BORROW_INDEX_CALCULATION_FAILED, uint(mathErr));
         }
@@ -585,16 +593,22 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         /* We write the previously calculated values into storage */
         accrualBlockNumber = currentBlockNumber;
-        borrowIndex = borrowIndexNew;
-        totalBorrows = totalBorrowsNew;
-        totalReserves = totalReservesNew;
+        borrowIndex = temp.borrowIndexNew;
+        totalBorrows = temp.totalBorrowsNew;
+        totalReserves = temp.totalReservesNew;
 
+        if(temp.splitedReserves_2 > 0){
+            address mProxy = moartroller.mProxy();
+            EIP20Interface(underlying).approve(mProxy, temp.splitedReserves_2);
+            MProxyInterface(mProxy).proxySplitReserves(underlying, temp.splitedReserves_2);
+        }
+        
         /* We emit an AccrueInterest event */
-        emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
+        emit AccrueInterest(cashPrior, temp.interestAccumulated, temp.borrowIndexNew, temp.totalBorrowsNew);
 
         return uint(Error.NO_ERROR);
     }
-
+    
     /**
      * @notice Sender supplies assets into the market and receives mTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
@@ -667,7 +681,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
          */
 
         (vars.mathErr, vars.mintTokens) = divScalarByExpTruncate(vars.actualMintAmount, Exp({mantissa: vars.exchangeRateMantissa}));
-        require(vars.mathErr == MathError.NO_ERROR, "MINT_EXCHANGE_CALCULATION_FAILED");
+        require(vars.mathErr == MathError.NO_ERROR, "MINT_E");
 
         /*
          * We calculate the new total supply of mTokens and minter token balance, checking for overflow:
@@ -675,10 +689,10 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
          *  accountTokensNew = accountTokens[minter] + mintTokens
          */
         (vars.mathErr, vars.totalSupplyNew) = addUInt(totalSupply, vars.mintTokens);
-        require(vars.mathErr == MathError.NO_ERROR, "MINT_NEW_TOTAL_SUPPLY_CALCULATION_FAILED");
+        require(vars.mathErr == MathError.NO_ERROR, "MINT_E");
 
         (vars.mathErr, vars.accountTokensNew) = addUInt(accountTokens[minter], vars.mintTokens);
-        require(vars.mathErr == MathError.NO_ERROR, "MINT_NEW_ACCOUNT_BALANCE_CALCULATION_FAILED");
+        require(vars.mathErr == MathError.NO_ERROR, "MINT_E");
 
         /* We write previously calculated values into storage */
         totalSupply = vars.totalSupplyNew;
@@ -746,7 +760,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemFresh(address payable redeemer, uint redeemTokensIn, uint redeemAmountIn) internal returns (uint) {
-        require(redeemTokensIn == 0 || redeemAmountIn == 0, "one of redeemTokensIn or redeemAmountIn must be zero");
+        require(redeemTokensIn == 0 || redeemAmountIn == 0, "redeemFresh_missing_zero");
 
         RedeemLocalVars memory vars;
 
@@ -865,7 +879,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
     }
 
     function borrowForInternal(address payable borrower, uint borrowAmount) internal nonReentrant returns (uint) {
-        require(moartroller.isPrivilegedAddress(msg.sender), "Insufficient permission to call borrowFor");
+        require(moartroller.isPrivilegedAddress(msg.sender), "permission_missing");
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
@@ -1028,7 +1042,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         /* If repayAmount == -1, repayAmount = accountBorrows */
         /* If the borrow is repaid by another user -1 cannot be used to prevent borrow front-running */
         if (repayAmount == uint(-1)) {
-            require(tx.origin != borrower, "MToken::repayBorrowFresh: Repaying a borrow in behalf requires to specify a precise amount");
+            require(tx.origin == borrower, "specify a precise amount");
             vars.repayAmount = vars.accountBorrows;
         } else {
             vars.repayAmount = repayAmount;
@@ -1053,10 +1067,10 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
          *  totalBorrowsNew = totalBorrows - actualRepayAmount
          */
         (vars.mathErr, vars.accountBorrowsNew) = subUInt(vars.accountBorrows, vars.actualRepayAmount);
-        require(vars.mathErr == MathError.NO_ERROR, "REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED");
+        require(vars.mathErr == MathError.NO_ERROR, "BORROW_BALANCE_CALCULATION_FAILED");
 
         (vars.mathErr, vars.totalBorrowsNew) = subUInt(totalBorrows, vars.actualRepayAmount);
-        require(vars.mathErr == MathError.NO_ERROR, "REPAY_BORROW_NEW_TOTAL_BALANCE_CALCULATION_FAILED");
+        require(vars.mathErr == MathError.NO_ERROR, "TOTAL_BALANCE_CALCULATION_FAILED");
 
         /* We write the previously calculated values into storage */
         accountBorrows[borrower].principal = vars.accountBorrowsNew;
@@ -1151,11 +1165,11 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         // (No safe failures beyond this point)
 
         /* We calculate the number of collateral tokens that will be seized */
-        (uint amountSeizeError, uint seizeTokens) = moartroller.liquidateCalculateSeizeTokens(address(this), address(mTokenCollateral), actualRepayAmount);
-        require(amountSeizeError == uint(Error.NO_ERROR), "LIQUIDATE_MOARTROLLER_CALCULATE_AMOUNT_SEIZE_FAILED");
+        (uint amountSeizeError, uint seizeTokens) = moartroller.liquidateCalculateSeizeUserTokens(address(this), address(mTokenCollateral), actualRepayAmount, borrower);
+        require(amountSeizeError == uint(Error.NO_ERROR), "CALCULATE_AMOUNT_SEIZE_FAILED");
 
         /* Revert if borrower collateral token balance < seizeTokens */
-        require(mTokenCollateral.balanceOf(borrower) >= seizeTokens, "LIQUIDATE_SEIZE_TOO_MUCH");
+        require(mTokenCollateral.balanceOf(borrower) >= seizeTokens, "TOO_MUCH");
 
         // If this is also the collateral, run seizeInternal to avoid re-entrancy, otherwise make an external call
         uint seizeError;
@@ -1317,7 +1331,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         Moartroller oldMoartroller = moartroller;
         // Ensure invoke moartroller.isMoartroller() returns true
-        require(newMoartroller.isMoartroller(), "marker method returned false");
+        require(newMoartroller.isMoartroller(), "not_moartroller");
 
         // Set market's moartroller to newMoartroller
         moartroller = newMoartroller;
@@ -1341,6 +1355,14 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
         // _setReserveFactorFresh emits reserve-factor-specific logs on errors, so we don't need to.
         return _setReserveFactorFresh(newReserveFactorMantissa);
+    }
+
+    function _setReserveSplitFactor(uint newReserveSplitFactorMantissa) external nonReentrant returns (uint) {
+         if (msg.sender != admin) {
+            return fail(Error.UNAUTHORIZED, FailureInfo.SET_RESERVE_FACTOR_ADMIN_CHECK);
+        }
+        reserveSplitFactorMantissa = newReserveSplitFactorMantissa;
+        return uint(Error.NO_ERROR);
     }
 
     /**
@@ -1422,7 +1444,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         totalReservesNew = totalReserves + actualAddAmount;
 
         /* Revert on overflow */
-        require(totalReservesNew >= totalReserves, "add reserves unexpected overflow");
+        require(totalReservesNew >= totalReserves, "overflow");
 
         // Store reserves[n+1] = reserves[n] + actualAddAmount
         totalReserves = totalReservesNew;
@@ -1486,7 +1508,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         totalReservesNew = totalReserves - reduceAmount;
         // We checked reduceAmount <= totalReserves above, so this should never revert.
-        require(totalReservesNew <= totalReserves, "reduce reserves unexpected underflow");
+        require(totalReservesNew <= totalReserves, "underflow");
 
         // Store reserves[n+1] = reserves[n] - reduceAmount
         totalReserves = totalReservesNew;
@@ -1540,7 +1562,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         oldInterestRateModel = interestRateModel;
 
         // Ensure invoke newInterestRateModel.isInterestRateModel() returns true
-        require(newInterestRateModel.isInterestRateModel(), "marker method returned false");
+        require(newInterestRateModel.isInterestRateModel(), "not_interest_model");
 
         // Set the interest rate model to newInterestRateModel
         interestRateModel = newInterestRateModel;

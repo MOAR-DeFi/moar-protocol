@@ -3,7 +3,7 @@
 
 pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 import "./MToken.sol";
 import "./Utils/ErrorReporter.sol";
@@ -11,6 +11,7 @@ import "./Utils/ExponentialNoError.sol";
 import "./Interfaces/PriceOracle.sol";
 import "./Interfaces/MoartrollerInterface.sol";
 import "./Interfaces/Versionable.sol";
+import "./Interfaces/MProxyInterface.sol";
 import "./MoartrollerStorage.sol";
 import "./Governance/UnionGovernanceToken.sol";
 import "./MProtection.sol";
@@ -18,19 +19,19 @@ import "./Interfaces/LiquidityMathModelInterface.sol";
 import "./LiquidityMathModelV1.sol";
 import "./Utils/SafeEIP20.sol";
 import "./Interfaces/EIP20Interface.sol";
+import "./Interfaces/LiquidationModelInterface.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
 /**
  * @title MOAR's Moartroller Contract
  * @author MOAR
  */
-contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerErrorReporter, ExponentialNoError, Versionable {
+contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerErrorReporter, ExponentialNoError, Versionable, Initializable {
 
     using SafeEIP20 for EIP20Interface;
 
     /// @notice Indicator that this is a Moartroller contract (for inspection)
     bool public constant isMoartroller = true;
-
-    bool public initialized;
 
     /// @notice Emitted when an admin supports a market
     event MarketListed(MToken mToken);
@@ -88,6 +89,8 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
 
     event NewLiquidityMathModel(address oldLiquidityMathModel, address newLiquidityMathModel);
 
+    event NewLiquidationModel(address oldLiquidationModel, address newLiquidationModel);
+
     /// @notice The initial MOAR index for a market
     uint224 public constant moarInitialIndex = 1e36;
 
@@ -101,11 +104,11 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
     uint internal constant collateralFactorMaxMantissa = 0.9e18; // 0.9
 
     // Custom initializer
-    function initialize(LiquidityMathModelInterface mathModel) public {
-        require(!initialized,"Contract already initialized");
+    function initialize(LiquidityMathModelInterface mathModel, LiquidationModelInterface lqdModel) public initializer {
         admin = msg.sender;
         liquidityMathModel = mathModel;
-        initialized = true;
+        liquidationModel = lqdModel;
+        rewardClaimEnabled = false;
     }
 
     /*** Assets You Are In ***/
@@ -269,26 +272,6 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
     }
 
     /**
-     * @notice Validates mint and reverts on rejection. May emit logs.
-     * @param mToken Asset being minted
-     * @param minter The address minting the tokens
-     * @param actualMintAmount The amount of the underlying asset being minted
-     * @param mintTokens The number of tokens being minted
-     */
-    function mintVerify(address mToken, address minter, uint actualMintAmount, uint mintTokens) external override {
-        // Shh - currently unused
-        mToken;
-        minter;
-        actualMintAmount;
-        mintTokens;
-
-        // Shh - we don't ever want this hook to be marked pure
-        if (false) {
-            maxAssets = maxAssets;
-        }
-    }
-
-    /**
      * @notice Checks if the account should be allowed to redeem tokens in the given market
      * @param mToken The market to verify the redeem against
      * @param redeemer The account which would redeem the tokens
@@ -407,24 +390,6 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
     }
 
     /**
-     * @notice Validates borrow and reverts on rejection. May emit logs.
-     * @param mToken Asset whose underlying is being borrowed
-     * @param borrower The address borrowing the underlying
-     * @param borrowAmount The amount of the underlying asset requested to borrow
-     */
-    function borrowVerify(address mToken, address borrower, uint borrowAmount) external override {
-        // Shh - currently unused
-        mToken;
-        borrower;
-        borrowAmount;
-
-        // Shh - we don't ever want this hook to be marked pure
-        if (false) {
-            maxAssets = maxAssets;
-        }
-    }
-
-    /**
      * @notice Checks if the account should be allowed to repay a borrow in the given market
      * @param mToken The market to verify the repay against
      * @param payer The account which would repay the asset
@@ -452,32 +417,6 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         distributeBorrowerMoar(mToken, borrower, borrowIndex);
 
         return uint(Error.NO_ERROR);
-    }
-
-    /**
-     * @notice Validates repayBorrow and reverts on rejection. May emit logs.
-     * @param mToken Asset being repaid
-     * @param payer The address repaying the borrow
-     * @param borrower The address of the borrower
-     * @param actualRepayAmount The amount of underlying being repaid
-     */
-    function repayBorrowVerify(
-        address mToken,
-        address payer,
-        address borrower,
-        uint actualRepayAmount,
-        uint borrowerIndex) external override {
-        // Shh - currently unused
-        mToken;
-        payer;
-        borrower;
-        actualRepayAmount;
-        borrowerIndex;
-
-        // Shh - we don't ever want this hook to be marked pure
-        if (false) {
-            maxAssets = maxAssets;
-        }
     }
 
     /**
@@ -521,35 +460,6 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
     }
 
     /**
-     * @notice Validates liquidateBorrow and reverts on rejection. May emit logs.
-     * @param mTokenBorrowed Asset which was borrowed by the borrower
-     * @param mTokenCollateral Asset which was used as collateral and will be seized
-     * @param liquidator The address repaying the borrow and seizing the collateral
-     * @param borrower The address of the borrower
-     * @param actualRepayAmount The amount of underlying being repaid
-     */
-    function liquidateBorrowVerify(
-        address mTokenBorrowed,
-        address mTokenCollateral,
-        address liquidator,
-        address borrower,
-        uint actualRepayAmount,
-        uint seizeTokens) external override {
-        // Shh - currently unused
-        mTokenBorrowed;
-        mTokenCollateral;
-        liquidator;
-        borrower;
-        actualRepayAmount;
-        seizeTokens;
-
-        // Shh - we don't ever want this hook to be marked pure
-        if (false) {
-            maxAssets = maxAssets;
-        }
-    }
-
-    /**
      * @notice Checks if the seizing of assets should be allowed to occur
      * @param mTokenCollateral Asset which was used as collateral and will be seized
      * @param mTokenBorrowed Asset which was borrowed by the borrower
@@ -586,33 +496,6 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
     }
 
     /**
-     * @notice Validates seize and reverts on rejection. May emit logs.
-     * @param mTokenCollateral Asset which was used as collateral and will be seized
-     * @param mTokenBorrowed Asset which was borrowed by the borrower
-     * @param liquidator The address repaying the borrow and seizing the collateral
-     * @param borrower The address of the borrower
-     * @param seizeTokens The number of collateral tokens to seize
-     */
-    function seizeVerify(
-        address mTokenCollateral,
-        address mTokenBorrowed,
-        address liquidator,
-        address borrower,
-        uint seizeTokens) external override {
-        // Shh - currently unused
-        mTokenCollateral;
-        mTokenBorrowed;
-        liquidator;
-        borrower;
-        seizeTokens;
-
-        // Shh - we don't ever want this hook to be marked pure
-        if (false) {
-            maxAssets = maxAssets;
-        }
-    }
-
-    /**
      * @notice Checks if the account should be allowed to transfer tokens in the given market
      * @param mToken The market to verify the transfer against
      * @param src The account which sources the tokens
@@ -639,45 +522,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         return uint(Error.NO_ERROR);
     }
 
-    /**
-     * @notice Validates transfer and reverts on rejection. May emit logs.
-     * @param mToken Asset being transferred
-     * @param src The account which sources the tokens
-     * @param dst The account which receives the tokens
-     * @param transferTokens The number of mTokens to transfer
-     */
-    function transferVerify(address mToken, address src, address dst, uint transferTokens) external override {
-        // Shh - currently unused
-        mToken;
-        src;
-        dst;
-        transferTokens;
-
-        // Shh - we don't ever want this hook to be marked pure
-        if (false) {
-            maxAssets = maxAssets;
-        }
-    }
-
     /*** Liquidity/Liquidation Calculations ***/
-
-    /**
-     * @dev Local vars for avoiding stack-depth limits in calculating account liquidity.
-     *  Note that `mTokenBalance` is the number of mTokens the account owns in the market,
-     *  whereas `borrowBalance` is the amount of underlying that the account has borrowed.
-     */
-    struct AccountLiquidityLocalVars {
-        uint sumCollateral;
-        uint sumBorrowPlusEffects;
-        uint mTokenBalance;
-        uint borrowBalance;
-        uint exchangeRateMantissa;
-        uint oraclePriceMantissa;
-        Exp collateralFactor;
-        Exp exchangeRate;
-        Exp oraclePrice;
-        Exp tokensToDenom;
-    }
 
     /**
      * @notice Determine the current account liquidity wrt collateral requirements
@@ -760,7 +605,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
             if (vars.oraclePriceMantissa == 0) {
                 return (Error.PRICE_ERROR, 0, 0);
             }
-            vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
+            vars.oraclePrice = mul_(Exp({mantissa: vars.oraclePriceMantissa}), 10**uint256(18 - EIP20Interface(asset.getUnderlying()).decimals()));
 
             // Pre-compute a conversion factor from tokens -> dai (normalized price value)
             vars.tokensToDenom = mul_(mul_(vars.collateralFactor, vars.exchangeRate), vars.oraclePrice);
@@ -833,13 +678,28 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         );
     }
 
+    function liquidateCalculateSeizeUserTokens(address mTokenBorrowed, address mTokenCollateral, uint actualRepayAmount, address account) external override view returns (uint, uint) {
+        return LiquidationModelInterface(liquidationModel).liquidateCalculateSeizeUserTokens(
+            LiquidationModelInterface.LiquidateCalculateSeizeUserTokensArgumentsSet(
+                oracle,
+                this,
+                mTokenBorrowed,
+                mTokenCollateral,
+                actualRepayAmount,
+                account,
+                liquidationIncentiveMantissa
+            )
+        );
+    }
+
+
     /**
      * @notice Returns the amount of a specific asset that is locked under all c-ops
      * @param asset The MToken address
      * @param account The owner of asset
      * @return The amount of asset locked under c-ops
      */
-    function getUserLockedAmount(MToken asset, address account) public view returns(uint) {
+    function getUserLockedAmount(MToken asset, address account) public override view returns(uint) {
         uint protectionLockedAmount;
         address currency = asset.underlying();
 
@@ -856,42 +716,6 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
     }
 
 
-    /**
-     * @notice Calculate number of tokens of collateral asset to seize given an underlying amount
-     * @dev Used in liquidation (called in mToken.liquidateBorrowFresh)
-     * @param mTokenBorrowed The address of the borrowed mToken
-     * @param mTokenCollateral The address of the collateral mToken
-     * @param actualRepayAmount The amount of mTokenBorrowed underlying to convert into mTokenCollateral tokens
-     * @return (errorCode, number of mTokenCollateral tokens to be seized in a liquidation)
-     */
-    function liquidateCalculateSeizeTokens(address mTokenBorrowed, address mTokenCollateral, uint actualRepayAmount) external override view returns (uint, uint) {
-        /* Read oracle prices for borrowed and collateral markets */
-        uint priceBorrowedMantissa = oracle.getUnderlyingPrice(MToken(mTokenBorrowed));
-        uint priceCollateralMantissa = oracle.getUnderlyingPrice(MToken(mTokenCollateral));
-        if (priceBorrowedMantissa == 0 || priceCollateralMantissa == 0) {
-            return (uint(Error.PRICE_ERROR), 0);
-        }
-
-        /*
-         * Get the exchange rate and calculate the number of collateral tokens to seize:
-         *  seizeAmount = actualRepayAmount * liquidationIncentive * priceBorrowed / priceCollateral
-         *  seizeTokens = seizeAmount / exchangeRate
-         *   = actualRepayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
-         */
-        uint exchangeRateMantissa = MToken(mTokenCollateral).exchangeRateStored(); // Note: reverts on error
-        uint seizeTokens;
-        Exp memory numerator;
-        Exp memory denominator;
-        Exp memory ratio;
-
-        numerator = mul_(Exp({mantissa: liquidationIncentiveMantissa}), Exp({mantissa: priceBorrowedMantissa}));
-        denominator = mul_(Exp({mantissa: priceCollateralMantissa}), Exp({mantissa: exchangeRateMantissa}));
-        ratio = div_(numerator, denominator);
-
-        seizeTokens = mul_ScalarTruncate(ratio, actualRepayAmount);
-
-        return (uint(Error.NO_ERROR), seizeTokens);
-    }
 
     /*** Admin Functions ***/
 
@@ -1019,6 +843,14 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
 
         // Emit event with old incentive, new incentive
         emit NewLiquidationIncentive(oldLiquidationIncentiveMantissa, newLiquidationIncentiveMantissa);
+
+        return uint(Error.NO_ERROR);
+    }
+
+        function _setRewardClaimEnabled(bool status) external returns (uint) {
+        // Check caller is admin
+    	require(msg.sender == admin, "only admin can set close factor");
+        rewardClaimEnabled = status;
 
         return uint(Error.NO_ERROR);
     }
@@ -1171,13 +1003,11 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      */
     function setMoarSpeedInternal(MToken mToken, uint moarSpeed) internal {
         uint currentMoarSpeed = moarSpeeds[address(mToken)];
-        if (currentMoarSpeed != 0) {
-            // note that MOAR speed could be set to 0 to halt liquidity rewards for a market
-            Exp memory borrowIndex = Exp({mantissa: mToken.borrowIndex()});
-            updateMoarSupplyIndex(address(mToken));
-            updateMoarBorrowIndex(address(mToken), borrowIndex);
-        } else if (moarSpeed != 0) {
-            // Add the MOAR market
+        // note that MOAR speed could be set to 0 to halt liquidity rewards for a market
+        Exp memory borrowIndex = Exp({mantissa: mToken.borrowIndex()});
+        updateMoarSupplyIndex(address(mToken));
+        updateMoarBorrowIndex(address(mToken), borrowIndex);
+       if (moarSpeed != 0) {
             Market storage market = markets[address(mToken)];
             require(market.isListed == true, "MOAR market is not listed");
 
@@ -1318,6 +1148,13 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         return claimMoar(holder, allMarkets);
     }
 
+    function updateMoarReward(address holder) public returns (uint256){
+        address[] memory holders = new address[](1);
+        holders[0] = holder;
+        updateClaimMoar(holders, allMarkets, true, true);
+        return moarAccrued[holder];
+    }
+
     /**
      * @notice Claim all the MOAR accrued by holder in the specified markets
      * @param holder The address to claim MOAR for
@@ -1329,6 +1166,26 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         claimMoar(holders, mTokens, true, true);
     }
 
+    function updateClaimMoar(address[] memory holders, MToken[] memory mTokens, bool borrowers, bool suppliers) public {
+        for (uint i = 0; i < mTokens.length; i++) {
+            MToken mToken = mTokens[i];
+            require(markets[address(mToken)].isListed, "market not listed");
+            if (borrowers == true) {
+                Exp memory borrowIndex = Exp({mantissa: mToken.borrowIndex()});
+                updateMoarBorrowIndex(address(mToken), borrowIndex);
+                for (uint j = 0; j < holders.length; j++) {
+                    distributeBorrowerMoar(address(mToken), holders[j], borrowIndex);
+                }
+            }
+            if (suppliers == true) {
+                updateMoarSupplyIndex(address(mToken));
+                for (uint j = 0; j < holders.length; j++) {
+                    distributeSupplierMoar(address(mToken), holders[j]);
+                }
+            }
+        }
+    }
+
     /**
      * @notice Claim all MOAR accrued by the holders
      * @param holders The addresses to claim MOAR for
@@ -1337,24 +1194,10 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param suppliers Whether or not to claim MOAR earned by supplying
      */
     function claimMoar(address[] memory holders, MToken[] memory mTokens, bool borrowers, bool suppliers) public {
-        for (uint i = 0; i < mTokens.length; i++) {
-            MToken mToken = mTokens[i];
-            require(markets[address(mToken)].isListed, "market must be listed");
-            if (borrowers == true) {
-                Exp memory borrowIndex = Exp({mantissa: mToken.borrowIndex()});
-                updateMoarBorrowIndex(address(mToken), borrowIndex);
-                for (uint j = 0; j < holders.length; j++) {
-                    distributeBorrowerMoar(address(mToken), holders[j], borrowIndex);
-                    moarAccrued[holders[j]] = grantMoarInternal(holders[j], moarAccrued[holders[j]]);
-                }
-            }
-            if (suppliers == true) {
-                updateMoarSupplyIndex(address(mToken));
-                for (uint j = 0; j < holders.length; j++) {
-                    distributeSupplierMoar(address(mToken), holders[j]);
-                    moarAccrued[holders[j]] = grantMoarInternal(holders[j], moarAccrued[holders[j]]);
-                }
-            }
+        require(rewardClaimEnabled, "disabled");
+        updateClaimMoar(holders, mTokens, borrowers, suppliers);
+        for (uint j = 0; j < holders.length; j++) {
+            moarAccrued[holders[j]] = grantMoarInternal(holders[j], moarAccrued[holders[j]]);
         }
     }
 
@@ -1369,7 +1212,8 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         EIP20Interface moar = EIP20Interface(getMoarAddress());
         uint moarRemaining = moar.balanceOf(address(this));
         if (amount > 0 && amount <= moarRemaining) {
-            moar.safeTransfer(user, amount);
+            moar.approve(mProxy, amount);
+            MProxyInterface(mProxy).proxyClaimReward(getMoarAddress(), user, amount);
             return 0;
         }
         return amount;
@@ -1384,9 +1228,9 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param amount The amount of MOAR to (possibly) transfer
      */
     function _grantMoar(address recipient, uint amount) public {
-        require(adminOrInitializing(), "only admin can grant MOAR");
+        require(adminOrInitializing(), "only admin");
         uint amountLeft = grantMoarInternal(recipient, amount);
-        require(amountLeft == 0, "insufficient MOAR for grant");
+        require(amountLeft == 0, "insufficient MOAR");
         emit MoarGranted(recipient, amount);
     }
 
@@ -1396,7 +1240,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param moarSpeed New MOAR speed for market
      */
     function _setMoarSpeed(MToken mToken, uint moarSpeed) public {
-        require(adminOrInitializing(), "only admin can set MOAR speed");
+        require(adminOrInitializing(), "only admin");
         setMoarSpeedInternal(mToken, moarSpeed);
     }
 
@@ -1406,7 +1250,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param moarSpeed New MOAR speed for contributor
      */
     function _setContributorMoarSpeed(address contributor, uint moarSpeed) public {
-        require(adminOrInitializing(), "only admin can set MOAR speed");
+        require(adminOrInitializing(), "only admin");
 
         // note that MOAR speed could be set to 0 to halt liquidity rewards for a contributor
         updateContributorRewards(contributor);
@@ -1426,7 +1270,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param mathModel the math model implementation
      */
     function _setLiquidityMathModel(LiquidityMathModelInterface mathModel) public {
-        require(msg.sender == admin, "only admin can set liquidity math model implementation");
+        require(msg.sender == admin, "only admin");
 
         LiquidityMathModelInterface oldLiquidityMathModel = liquidityMathModel;
         liquidityMathModel = mathModel;
@@ -1434,9 +1278,28 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         emit NewLiquidityMathModel(address(oldLiquidityMathModel), address(liquidityMathModel));
     }
 
+    /**
+     * @notice Set liquidation model implementation
+     * @param newLiquidationModel the liquidation model implementation
+     */
+    function _setLiquidationModel(LiquidationModelInterface newLiquidationModel) public {
+        require(msg.sender == admin, "only admin");
+
+        LiquidationModelInterface oldLiquidationModel = liquidationModel;
+        liquidationModel = newLiquidationModel;
+
+        emit NewLiquidationModel(address(oldLiquidationModel), address(liquidationModel));
+    }
+
+
     function _setMoarToken(address moarTokenAddress) public {
-        require(msg.sender == admin, "only admin can set MOAR token address");
+        require(msg.sender == admin, "only admin ");
         moarToken = moarTokenAddress;
+    }
+
+    function _setMProxy(address mProxyAddress) public {
+        require(msg.sender == admin, "only admin");
+        mProxy = mProxyAddress;
     }
 
     /**
@@ -1444,7 +1307,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param privilegedAddress address to add
      */
     function _addPrivilegedAddress(address privilegedAddress) public {
-        require(msg.sender == admin, "only admin can set liquidity math model implementation");
+        require(msg.sender == admin, "only admin");
         privilegedAddresses[privilegedAddress] = 1;
     }
 
@@ -1453,7 +1316,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param privilegedAddress address to remove
      */
     function _removePrivilegedAddress(address privilegedAddress) public {
-        require(msg.sender == admin, "only admin can set liquidity math model implementation");
+        require(msg.sender == admin, "only admin");
         delete privilegedAddresses[privilegedAddress];
     }
 

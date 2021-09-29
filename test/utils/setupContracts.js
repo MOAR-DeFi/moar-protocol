@@ -93,8 +93,13 @@ const setupPlatformContracts = async function (tokensAddresses) {
     liquidityMathModelV1 = await LiquidityMathModelV1.deploy()
     await liquidityMathModelV1.deployed()
 
+    const LiquidationModelV1 = await ethers.getContractFactory("LiquidationModelV1")
+    liquidationModelV1 = await LiquidationModelV1.deploy()
+    await liquidationModelV1.deployed()
+
+
     const Moartroller = await ethers.getContractFactory("Moartroller")
-    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address]);
+    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address, liquidationModelV1.address]);
     await moartroller.deployed()
 
     const JumpRateModelV2 = await ethers.getContractFactory("JumpRateModelV2")
@@ -118,6 +123,7 @@ const setupPlatformContracts = async function (tokensAddresses) {
         moartroller: moartroller,
         interestRateModel: jumpRateModelV2,
         liquidityMathModel: liquidityMathModelV1,
+        liquidationModel: liquidationModelV1,
         lendingRouter: lendingRouter,
         uunn: uunn,
         muunn: muunn

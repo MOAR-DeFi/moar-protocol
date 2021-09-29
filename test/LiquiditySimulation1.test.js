@@ -14,7 +14,7 @@ describe("Liquidity Simulation 1", () => {
     app = await setupAll()
     await app.moartroller._setCollateralFactor(app.mdai.address, tokens('0.9'))
     await app.moartroller._setCollateralFactor(app.mwbtc.address, tokens('0.6'))
-    await app.moartroller._setCollateralFactor(app.musdc.address, tokens('0.9'))
+    await app.moartroller._setCollateralFactor(app.musdc.address, tokens('0.8'))
     await app.moartroller._setCollateralFactor(app.munn.address, tokens('0.4'))
     await app.moartroller._setCollateralFactor(app.meth.address, tokens('0.5'))
   })

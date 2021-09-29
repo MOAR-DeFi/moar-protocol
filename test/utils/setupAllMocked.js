@@ -43,9 +43,13 @@ const setupAll = async function () {
     const LiquidityMathModelV1 = await ethers.getContractFactory("LiquidityMathModelV1")
     liquidityMathModelV1 = await LiquidityMathModelV1.deploy()
     await liquidityMathModelV1.deployed()
+    
+    const LiquidationModelV1 = await ethers.getContractFactory("LiquidationModelV1")
+    liquidationModelV1 = await LiquidationModelV1.deploy()
+    await liquidationModelV1.deployed()
 
     const Moartroller = await ethers.getContractFactory("Moartroller")
-    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address]);
+    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address, liquidationModelV1.address]);
     await moartroller.deployed()
 
     const JumpRateModelV2 = await ethers.getContractFactory("JumpRateModelV2")
@@ -110,7 +114,7 @@ const setupAll = async function () {
     await moartroller._setMoarToken(moar.address)
     await moartroller._setPriceOracle(oracle.address)
     await moartroller._setProtection(muunn.address)
-    await moartroller._setLiquidationIncentive(tokens('0.1'))
+    await moartroller._setLiquidationIncentive(tokens('1.1'))
     await moartroller._setCloseFactor(tokens('0.5'))
 
     await moartroller._supportMarket(mdai.address)
@@ -132,11 +136,40 @@ const setupAll = async function () {
     // MAXIMILLION
     maximillion = await setupMaximillion(meth.address)
 
+    // Vesting
+    const MultiFeeDistribution = await ethers.getContractFactory("MultiFeeDistribution")
+    vesting = await MultiFeeDistribution.deploy(moar.address, [], '70')
+    await vesting.deployed()
+
+    const ERCFund = await ethers.getContractFactory("ERCFund")
+    ercFund = await ERCFund.deploy(vesting.address)
+    await ercFund.deployed()
+
+    const MProxyV1 = await ethers.getContractFactory("MProxyV1")
+    mproxyv1 = await MProxyV1.deploy(owner.address)
+    await mproxyv1.deployed()
+
+    const MProxyV2 = await ethers.getContractFactory("MProxyV2")
+    mproxyv2 = await MProxyV2.deploy(vesting.address, ercFund.address)
+    await mproxyv2.deployed()
+
+    tx = await moartroller._setMProxy(mproxyv2.address)
+    await tx.wait()
+
+    tx = await vesting.setMinter(mproxyv2.address, true)
+    await tx.wait()
+
+    tx = await vesting.addReward(usdc.address, ercFund.address)
+    await tx.wait()
+
+    tx = await vesting.addReward(weth.address, ercFund.address)
+    await tx.wait()
     return {
         owner, user1, user2, user3, 
         dai, usdc, wbtc, unn, weth, moar,
         mdai, mwbtc, musdc, munn, meth, mmoar,
-        oracle, liquidityMathModelV1, moartroller, uunn, muunn, lendingRouter, maximillion
+        oracle, liquidityMathModelV1, liquidationModelV1, moartroller, uunn, muunn, lendingRouter, maximillion,
+        mproxyv1, mproxyv2, vesting,
     }
 }
 

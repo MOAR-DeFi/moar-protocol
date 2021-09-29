@@ -1,7 +1,28 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.6.12;
 
+import "../MToken.sol";
+import "../Utils/ExponentialNoError.sol";
+
 interface MoartrollerInterface {
+
+    /**
+ * @dev Local vars for avoiding stack-depth limits in calculating account liquidity.
+ *  Note that `mTokenBalance` is the number of mTokens the account owns in the market,
+ *  whereas `borrowBalance` is the amount of underlying that the account has borrowed.
+ */
+    struct AccountLiquidityLocalVars {
+        uint sumCollateral;
+        uint sumBorrowPlusEffects;
+        uint mTokenBalance;
+        uint borrowBalance;
+        uint exchangeRateMantissa;
+        uint oraclePriceMantissa;
+        ExponentialNoError.Exp collateralFactor;
+        ExponentialNoError.Exp exchangeRate;
+        ExponentialNoError.Exp oraclePrice;
+        ExponentialNoError.Exp tokensToDenom;
+    }
 
     /*** Assets You Are In ***/
 
@@ -11,25 +32,17 @@ interface MoartrollerInterface {
     /*** Policy Hooks ***/
 
     function mintAllowed(address mToken, address minter, uint mintAmount) external returns (uint);
-    function mintVerify(address mToken, address minter, uint mintAmount, uint mintTokens) external;
 
     function redeemAllowed(address mToken, address redeemer, uint redeemTokens) external returns (uint);
     function redeemVerify(address mToken, address redeemer, uint redeemAmount, uint redeemTokens) external;
 
     function borrowAllowed(address mToken, address borrower, uint borrowAmount) external returns (uint);
-    function borrowVerify(address mToken, address borrower, uint borrowAmount) external;
 
     function repayBorrowAllowed(
         address mToken,
         address payer,
         address borrower,
         uint repayAmount) external returns (uint);
-    function repayBorrowVerify(
-        address mToken,
-        address payer,
-        address borrower,
-        uint repayAmount,
-        uint borrowerIndex) external;
 
     function liquidateBorrowAllowed(
         address mTokenBorrowed,
@@ -37,13 +50,6 @@ interface MoartrollerInterface {
         address liquidator,
         address borrower,
         uint repayAmount) external returns (uint);
-    function liquidateBorrowVerify(
-        address mTokenBorrowed,
-        address mTokenCollateral,
-        address liquidator,
-        address borrower,
-        uint repayAmount,
-        uint seizeTokens) external;
 
     function seizeAllowed(
         address mTokenCollateral,
@@ -51,20 +57,16 @@ interface MoartrollerInterface {
         address liquidator,
         address borrower,
         uint seizeTokens) external returns (uint);
-    function seizeVerify(
-        address mTokenCollateral,
-        address mTokenBorrowed,
-        address liquidator,
-        address borrower,
-        uint seizeTokens) external;
 
     function transferAllowed(address mToken, address src, address dst, uint transferTokens) external returns (uint);
-    function transferVerify(address mToken, address src, address dst, uint transferTokens) external;
 
     /*** Liquidity/Liquidation Calculations ***/
 
-    function liquidateCalculateSeizeTokens(
+    function liquidateCalculateSeizeUserTokens(
         address mTokenBorrowed,
         address mTokenCollateral,
-        uint repayAmount) external view returns (uint, uint);
+        uint repayAmount,
+        address account) external view returns (uint, uint);
+
+    function getUserLockedAmount(MToken asset, address account) external view returns(uint);
 }

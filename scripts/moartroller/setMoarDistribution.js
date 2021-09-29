@@ -2,14 +2,15 @@ const { tokens } = require('./../../test/utils/testHelpers')
 
 let moartroller 
 
-// Rinkeby addresses
-const moartrollerAddress    = '0xFD853DEb3a1f7b230DB982352B621f9D6962A656'
-const mdaiAddress           = '0x8Df198D262098D60726d5707a6b5131794ecE8Ee'
-const mwbtcAddress          = '0xd06Fa1291d62bc7E13F5e2606aa156f8CC6fD7a5'
-const musdcAddress          = '0xe117e8ECcef0397C90BD18d02c23963874cfCF97'
-const munnAddress           = '0x6Ba7673b857F2527523e942007d6B93012456bAF'
-const mmoarAddress          = '0xbB88229e2f3bB72b5215bE569d664BE414B29F35'
-const methAddress           = '0x14b1373c4A4eB7807621504739ddC19F164dAE29'
+// Mainnet addresses
+const moartrollerAddress    = '0x802A92B277348299ef766CF6b777921F6a8390Cc'
+const mUsdtAddress          = '0xaA6B94A9dfab4CEf95261ea278a399acC73465F7'
+const mUsdcAddress          = '0x4aF0E9D987D00B455c40d139ba656BAD19468204'
+const mWbtcAddress          = '0xeAA39e249946b8C721891513dF415164B251FaB2'
+const mEthAddress           = '0x4e2ec0De2aA600eE2A9320515b4A65D7b4133137'
+const mUnnAddress           = '0x18E4C9B5868797808941Bc8119864Ed72135d45D'
+const mMoarAddress          = '0x4631cf9Cc44e40A27a3C8b39134828C281662b57'
+const mLinkAddress          = '0x2569A1F3490b0B67bBd388578a3470667779A25F'
 
 async function main() {
     [owner, user1, user2, user3, user4] = await ethers.getSigners()
@@ -17,12 +18,17 @@ async function main() {
     const Moartroller = await ethers.getContractFactory("Moartroller")
     moartroller = await Moartroller.attach(moartrollerAddress)
 
-    // await moartroller._setMoarSpeed(mmoarAddress, tokens('1'))
+    await moartroller._setMoarSpeed(mEthAddress,    tokens('0.0005456349206'))
+    await moartroller._setMoarSpeed(mUsdtAddress,   tokens('0.005121527778'))
+    await moartroller._setMoarSpeed(mUnnAddress,    tokens('0.04714781746'))
+    await moartroller._setMoarSpeed(mUsdcAddress,   tokens('0.008531746032'))
+    await moartroller._setMoarSpeed(mMoarAddress,   tokens('0.06649305556'))
+
 
     // result = await moartroller.moarSpeeds(mmoarAddress)
     // console.log(result.toString())
 
-    await moartroller.claimMoar(owner.address)
+    // await moartroller.claimMoar(owner.address)
 }   
 
 main()

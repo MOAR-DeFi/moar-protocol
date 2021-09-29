@@ -4,6 +4,7 @@ pragma solidity ^0.6.12;
 import "./MToken.sol";
 import "./Interfaces/PriceOracle.sol";
 import "./Interfaces/LiquidityMathModelInterface.sol";
+import "./Interfaces/LiquidationModelInterface.sol";
 import "./MProtection.sol";
 
 abstract contract UnitrollerAdminStorage {
@@ -150,6 +151,11 @@ contract MoartrollerV6Storage is MoartrollerV5Storage {
      * @dev Moar token address
      */
     address public moarToken;
+
+    /**
+     * @dev MProxy address
+     */
+    address public mProxy;
     
     /**
      * @dev CProtection contract which can be used for collateral optimisation
@@ -166,8 +172,21 @@ contract MoartrollerV6Storage is MoartrollerV5Storage {
      */
     LiquidityMathModelInterface public liquidityMathModel;
 
+
+    /**
+     * @dev Liquidation model for liquidation related functions
+     */
+    LiquidationModelInterface public liquidationModel;
+
+
+
     /**
      * @dev List of addresses with privileged access
      */
     mapping(address => uint) public privilegedAddresses;
+
+    /**
+     * @dev Determines if reward claim feature is enabled
+     */
+    bool public rewardClaimEnabled;
 }

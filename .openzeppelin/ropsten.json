@@ -1,0 +1,234 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [],
+  "impls": {
+    "ef944084f0c5c737f2a1b52d08779c0cbdc7cf0d2ec1abddf6bb1a7d87c727c7": {
+      "address": "0x7A0e66A84C55e36028b2dbd796106B5cf049cB33",
+      "txHash": "0xcda57710364e283f5e8f243c72375a6ece02b0817998f3c0cddaa3ebdb36a87d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "MTokenStorage",
+            "label": "_notEntered",
+            "type": "t_bool",
+            "src": "contracts/MTokenStorage.sol:11"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "name",
+            "type": "t_string_storage",
+            "src": "contracts/MTokenStorage.sol:16"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "symbol",
+            "type": "t_string_storage",
+            "src": "contracts/MTokenStorage.sol:21"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "decimals",
+            "type": "t_uint8",
+            "src": "contracts/MTokenStorage.sol:26"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "underlying",
+            "type": "t_address",
+            "src": "contracts/MTokenStorage.sol:31"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "borrowRateMaxMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:37"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "reserveFactorMaxMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:42"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "admin",
+            "type": "t_address_payable",
+            "src": "contracts/MTokenStorage.sol:47"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "pendingAdmin",
+            "type": "t_address_payable",
+            "src": "contracts/MTokenStorage.sol:52"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "moartroller",
+            "type": "t_contract(Moartroller)24140",
+            "src": "contracts/MTokenStorage.sol:57"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "interestRateModel",
+            "type": "t_contract(AbstractInterestRateModel)7613",
+            "src": "contracts/MTokenStorage.sol:62"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "initialExchangeRateMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:67"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "reserveFactorMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:72"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "reserveSplitFactorMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:77"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "accrualBlockNumber",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:82"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "borrowIndex",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:87"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "totalBorrows",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:92"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "totalReserves",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:97"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "totalSupply",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:102"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "maxProtectionComposition",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:107"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "maxProtectionCompositionMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:112"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "accountTokens",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MTokenStorage.sol:117"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "transferAllowances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MTokenStorage.sol:122"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "accountBorrows",
+            "type": "t_mapping(t_address,t_struct(BorrowSnapshot)19219_storage)",
+            "src": "contracts/MTokenStorage.sol:152"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_contract(Moartroller)24140": {
+            "label": "contract Moartroller"
+          },
+          "t_contract(AbstractInterestRateModel)7613": {
+            "label": "contract AbstractInterestRateModel"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_struct(BorrowSnapshot)19219_storage)": {
+            "label": "mapping(address => struct MTokenStorage.BorrowSnapshot)"
+          },
+          "t_struct(BorrowSnapshot)19219_storage": {
+            "label": "struct MTokenStorage.BorrowSnapshot",
+            "members": [
+              {
+                "label": "principal",
+                "type": "t_uint256"
+              },
+              {
+                "label": "interestIndex",
+                "type": "t_uint256"
+              },
+              {
+                "label": "protectionsUsed",
+                "type": "t_mapping(t_uint256,t_struct(ProtectionUsage)19210_storage)"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_struct(ProtectionUsage)19210_storage)": {
+            "label": "mapping(uint256 => struct MTokenStorage.ProtectionUsage)"
+          },
+          "t_struct(ProtectionUsage)19210_storage": {
+            "label": "struct MTokenStorage.ProtectionUsage",
+            "members": [
+              {
+                "label": "protectionValueUsed",
+                "type": "t_uint256"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

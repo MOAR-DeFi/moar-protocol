@@ -20,8 +20,18 @@ const COP_3 = {
   premium: tokens('50')
 }
 const COP_WBTC = {
-    amount: "700000000",
+    amount: "700000000", // 7 wbtc with 8 decimals
     strike: tokens('60000'),
+    premium: tokens('70')
+}
+const COP_WETH = {
+    amount: tokens("1"), // 1 WETH with 18 decimals
+    strike: tokens('2000'),
+    premium: tokens('70')
+}
+const COP_USDC = {
+    amount: "5000000", // 5 USDC with 6 decimals
+    strike: tokens('1.1'),
     premium: tokens('70')
 }
 

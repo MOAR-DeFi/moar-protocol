@@ -14,17 +14,18 @@ describe("Upgradeable contracts tests", () => {
         app = await setupAll()
     })
 
-    it("Disallow another initialization of Moartroller with custom initializer", async () => {
+    it("Disallow second initialization", async () => {
         expectRevert(
-            app.moartroller.initialize(app.liquidityMathModelV1.address),
-            "Contract already initialized"
+            app.moartroller.initialize(app.liquidityMathModelV1.address, app.liquidationModelV1.address),
+            `reverted with reason string 'Initializable: contract is already initialized`
         )
     })
 
     it("Test Moartroller upgrade", async () => {
-        expect(await app.mdai.getContractVersion()).to.equal("V1");
-        const Moartroller = await ethers.getContractFactory("Moartroller")
+        expect(await app.moartroller.getContractVersion()).to.equal("V1");
+        const Moartroller = await ethers.getContractFactory("MoartrollerV2")
         await upgrades.upgradeProxy(app.moartroller.address, Moartroller);
+        expect(await app.moartroller.getContractVersion()).to.equal("V2");
     })
 
     it("Test MErc20Immutable proxy", async () => {

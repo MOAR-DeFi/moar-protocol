@@ -72,6 +72,11 @@ abstract contract MTokenStorage {
     uint public reserveFactorMantissa;
 
     /**
+     * @dev Fraction of reserves currently set aside for other usage
+     */
+    uint public reserveSplitFactorMantissa;
+
+    /**
      * @dev Block number that interest was last accrued at
      */
     uint public accrualBlockNumber;
@@ -129,6 +134,16 @@ abstract contract MTokenStorage {
         uint principal;
         uint interestIndex;
         mapping (uint256 => ProtectionUsage) protectionsUsed;
+    }
+
+    struct AccrueInterestTempStorage{
+        uint interestAccumulated;
+        uint reservesAdded;
+        uint splitedReserves_1;
+        uint splitedReserves_2;
+        uint totalBorrowsNew;
+        uint totalReservesNew;
+        uint borrowIndexNew;
     }
 
     /**

@@ -6,4 +6,3 @@ node_modules
 build/*
 artifacts/*
 cache/*
-.openzeppelin

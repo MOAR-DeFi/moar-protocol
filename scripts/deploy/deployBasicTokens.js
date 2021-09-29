@@ -32,6 +32,23 @@ async function main() {
           })
     console.log("USDC deployed!\n")
 
+    console.log("Deploying USDT")
+    usdt = await setupToken('TetherToken', 6, '0', '0', ['1000000000000000000000', 'Tether USD', 'USDT', 6], async (token) => {
+        tx = await token.transfer(user1.address, '1000000000000')
+        await tx.wait()
+        tx = await token.transfer(user2.address, '1000000000000')
+        await tx.wait()
+        tx = await token.transfer(user3.address, '1000000000000')
+        await tx.wait()
+        tx = await token.transfer(user4.address, '1000000000000')
+        await tx.wait()
+    })
+    console.log("USDT deployed!\n")
+
+    console.log("Deploying LINK")
+    link = await setupToken('LinkToken', 18, '0', '0')
+    console.log("LINK deployed!\n")
+
     console.log("Deploying UNN")
     unn  = await setupToken('TestUnionGovernanceToken', 18, '0', '0', [owner.address, tokens('1000040000')], async (token) => {
                 tx = await token.setCanTransfer(true)
@@ -57,7 +74,10 @@ async function main() {
        {
         "DAI address": dai.address,
         "WBTC address": wbtc.address,
-        "USDC address": usdc.address,
+        "WETH address": weth.address,
+        "USDC address": usdc.address,        
+        "USDT address": usdt.address,
+        "LINK address": link.address,
         "UNN address": unn.address,
         "MOAR address": moar.address
        }

@@ -67,11 +67,27 @@ async function main() {
     await liquidityMathModelV1.deployed()
     console.log("liquidityMathModelV1 deployed!\n")
 
+    console.log("Deploying LiquidationModelV1")
+    const LiquidationModelV1 = await ethers.getContractFactory("LiquidationModelV1")
+    liquidationModelV1 = await LiquidationModelV1.deploy()
+    await liquidationModelV1.deployed()
+    console.log("LiquidationModelV1 deployed!\n")
+
     console.log("Deploying Moartroller")
     const Moartroller = await ethers.getContractFactory("Moartroller")
-    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address]);
+    moartroller = await upgrades.deployProxy(Moartroller, [liquidityMathModelV1.address, liquidationModelV1.address]);
     await moartroller.deployed()
     console.log("Moartroller deployed!\n")
+   
+    console.log("Deploying MProxyV1")
+    const MProxyV1 = await ethers.getContractFactory("MProxyV1")
+    mproxyv1 = await MProxyV1.deploy(owner.address)
+    await mproxyv1.deployed()
+    console.log("MProxyV1 deployed!\n")
+
+    console.log("Setting MProxy")
+    await moartroller._setMProxy(mproxyv1.address)
+    console.log("MProxy set!\n")
 
     console.log("Deploying JumpRateModelV2")
     const JumpRateModelV2 = await ethers.getContractFactory("JumpRateModelV2")
@@ -195,7 +211,7 @@ async function main() {
     await tx.wait()
     tx = await moartroller._setProtection(cuunn.address)
     await tx.wait()
-    tx = await moartroller._setLiquidationIncentive(tokens('0.1'))
+    tx = await moartroller._setLiquidationIncentive(tokens('1.1'))
     await tx.wait()
     tx = await moartroller._setCloseFactor(tokens('0.5'))
     await tx.wait()

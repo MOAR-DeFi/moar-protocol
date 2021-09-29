@@ -1,0 +1,1604 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0xb789F19513E445f6Ff4506a6882B6f909b884C13",
+    "txHash": "0xb4e7255b67a887c26ed8817f73c4d3b1a7e4f359d1631b6cd03dbfe979d380a5",
+    "deployTransaction": {
+      "hash": "0xb4e7255b67a887c26ed8817f73c4d3b1a7e4f359d1631b6cd03dbfe979d380a5",
+      "type": 0,
+      "accessList": null,
+      "blockHash": null,
+      "blockNumber": null,
+      "transactionIndex": null,
+      "confirmations": 0,
+      "from": "0x61653649751A9C70b2607722c11cc385CE7208ed",
+      "gasPrice": {
+        "type": "BigNumber",
+        "hex": "0x089d5f3200"
+      },
+      "gasLimit": {
+        "type": "BigNumber",
+        "hex": "0x0762b4"
+      },
+      "to": null,
+      "value": {
+        "type": "BigNumber",
+        "hex": "0x00"
+      },
+      "nonce": 29,
+      "data": "0x608060405234801561001057600080fd5b50600080546001600160a01b031916339081178255604051909182917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a350610759806100616000396000f3fe60806040526004361061007b5760003560e01c80639623609d1161004e5780639623609d1461011157806399a88ec414610124578063f2fde38b14610144578063f3b7dead146101645761007b565b8063204e1c7a14610080578063715018a6146100bc5780637eff275e146100d35780638da5cb5b146100f3575b600080fd5b34801561008c57600080fd5b506100a061009b366004610515565b610184565b6040516001600160a01b03909116815260200160405180910390f35b3480156100c857600080fd5b506100d1610215565b005b3480156100df57600080fd5b506100d16100ee366004610554565b610292565b3480156100ff57600080fd5b506000546001600160a01b03166100a0565b6100d161011f36600461058c565b61031c565b34801561013057600080fd5b506100d161013f366004610554565b6103ad565b34801561015057600080fd5b506100d161015f366004610515565b610405565b34801561017057600080fd5b506100a061017f366004610515565b6104ef565b6000806000836001600160a01b03166040516101aa90635c60da1b60e01b815260040190565b600060405180830381855afa9150503d80600081146101e5576040519150601f19603f3d011682016040523d82523d6000602084013e6101ea565b606091505b5091509150816101f957600080fd5b8080602001905181019061020d9190610538565b949350505050565b6000546001600160a01b031633146102485760405162461bcd60e51b815260040161023f906106c0565b60405180910390fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b031633146102bc5760405162461bcd60e51b815260040161023f906106c0565b6040516308f2839760e41b81526001600160a01b038281166004830152831690638f283970906024015b600060405180830381600087803b15801561030057600080fd5b505af1158015610314573d6000803e3d6000fd5b505050505050565b6000546001600160a01b031633146103465760405162461bcd60e51b815260040161023f906106c0565b60405163278f794360e11b81526001600160a01b03841690634f1ef286903490610376908690869060040161065d565b6000604051808303818588803b15801561038f57600080fd5b505af11580156103a3573d6000803e3d6000fd5b5050505050505050565b6000546001600160a01b031633146103d75760405162461bcd60e51b815260040161023f906106c0565b604051631b2ce7f360e11b81526001600160a01b038281166004830152831690633659cfe6906024016102e6565b6000546001600160a01b0316331461042f5760405162461bcd60e51b815260040161023f906106c0565b6001600160a01b0381166104945760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b606482015260840161023f565b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b6000806000836001600160a01b03166040516101aa906303e1469160e61b815260040190565b600060208284031215610526578081fd5b81356105318161070b565b9392505050565b600060208284031215610549578081fd5b81516105318161070b565b60008060408385031215610566578081fd5b82356105718161070b565b915060208301356105818161070b565b809150509250929050565b6000806000606084860312156105a0578081fd5b83356105ab8161070b565b925060208401356105bb8161070b565b9150604084013567ffffffffffffffff808211156105d7578283fd5b818601915086601f8301126105ea578283fd5b8135818111156105fc576105fc6106f5565b604051601f8201601f19908116603f01168101908382118183101715610624576106246106f5565b8160405282815289602084870101111561063c578586fd5b82602086016020830137856020848301015280955050505050509250925092565b600060018060a01b038416825260206040818401528351806040850152825b818110156106985785810183015185820160600152820161067c565b818111156106a95783606083870101525b50601f01601f191692909201606001949350505050565b6020808252818101527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604082015260600190565b634e487b7160e01b600052604160045260246000fd5b6001600160a01b038116811461072057600080fd5b5056fea2646970667358221220d849f96f3086b9f82cdcf665adb8c697ace05638da1c7c16ab2d26293717af6764736f6c63430008020033",
+      "r": "0x566f1f3af582273b46e7ee2f06b0a56fc7b05a28142631d704d81b7f4fc65224",
+      "s": "0x2ef6e34627b09331b1703e7cb4bdea2babf8f7555ae3beff62a8e690df968d41",
+      "v": 38,
+      "creates": "0xb789F19513E445f6Ff4506a6882B6f909b884C13",
+      "chainId": 1
+    }
+  },
+  "proxies": [
+    {
+      "address": "0x77E7FA5B12B77A93E5Ad7456Ace11A7beB289407",
+      "txHash": "0x03105b8b7c5cc4c2575af0e98f34dc7fe301eb20c748809a514997dc60bb15bc",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xA967BD812E40bd7d7F6efFBcEcA8fcC2A9D3c686",
+      "txHash": "0xa4e59f120bb19be6bd952b1da0be9df2354784fd97f5a93f928c915c85ba347e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfaEf2e9aA2d7B522895e7Dc36fab08bF0C78d6BA",
+      "txHash": "0x504afb5c4775fc1ade5759c9b7eff02423b480b66eef93e0e1d8a44eec1471ad",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x964C3f86F70dba3C607429D5EC1C65F2Fb1c89d1",
+      "txHash": "0xa8d907b73c3a2e23d6a1cbc276d5169ae67f3ddfcab7e75ff09bf73a91e5c942",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xbF14c3FdCBeC76Aa330FB456A8A4d702604e2d4E",
+      "txHash": "0xa8b7a89bdb053e399b59212a5b277715107a1d75eb12c24527594cf7a9cf8155",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x934F44F2D211796214707F7032838738385bc7f1",
+      "txHash": "0x3b26595ae40b9ef61a88c6dce3fa09a91d3622ed65898abdb3c032e038fb0506",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xF186cd440DA91B89396D39f1FFdD271641914e91",
+      "txHash": "0x51cf061c504bfdc9560dabb9ad275f118bb049dc9079f63b65ae2ed16f0202a2",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCfF9347ee26d5184631b22A710c0f86625a9CCb5",
+      "txHash": "0x7287183bcac1b6da970aec90b7bf385eef57af3be686d5952f04e65c3273f629",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "c5faa153ca1f3c44ef236b4ce2001bbf4bb8c1864bd4275098d5eccee1a823d5": {
+      "address": "0x387c1fCF27bFe61de8C9CA7AFc1C7DFF0774A0a2",
+      "txHash": "0x0777f4efb14689a41facc9ab694279d9946df7a6a9161744bfc428f669c71fb0",
+      "layout": {
+        "storage": [
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "admin",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:14"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "pendingAdmin",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:19"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "moartrollerImplementation",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:24"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "pendingMoartrollerImplementation",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:29"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "oracle",
+            "type": "t_contract(PriceOracle)8997",
+            "src": "contracts/MoartrollerStorage.sol:37"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "closeFactorMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:42"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "liquidationIncentiveMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:47"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "maxAssets",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:52"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "accountAssets",
+            "type": "t_mapping(t_address,t_array(t_contract(MToken)14625)dyn_storage)",
+            "src": "contracts/MoartrollerStorage.sol:57"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "markets",
+            "type": "t_mapping(t_address,t_struct(Market)18680_storage)",
+            "src": "contracts/MoartrollerStorage.sol:82"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "pauseGuardian",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:90"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "_mintGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:91"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "_borrowGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:92"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "transferGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:93"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "seizeGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:94"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "mintGuardianPaused",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/MoartrollerStorage.sol:95"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "borrowGuardianPaused",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/MoartrollerStorage.sol:96"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "allMarkets",
+            "type": "t_array(t_contract(MToken)14625)dyn_storage",
+            "src": "contracts/MoartrollerStorage.sol:109"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarRate",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:112"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSpeeds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:115"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSupplyState",
+            "type": "t_mapping(t_address,t_struct(MoarMarketState)18712_storage)",
+            "src": "contracts/MoartrollerStorage.sol:118"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarBorrowState",
+            "type": "t_mapping(t_address,t_struct(MoarMarketState)18712_storage)",
+            "src": "contracts/MoartrollerStorage.sol:121"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSupplierIndex",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MoartrollerStorage.sol:124"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarBorrowerIndex",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MoartrollerStorage.sol:127"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarAccrued",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:130"
+          },
+          {
+            "contract": "MoartrollerV4Storage",
+            "label": "borrowCapGuardian",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:135"
+          },
+          {
+            "contract": "MoartrollerV4Storage",
+            "label": "borrowCaps",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:138"
+          },
+          {
+            "contract": "MoartrollerV5Storage",
+            "label": "moarContributorSpeeds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:143"
+          },
+          {
+            "contract": "MoartrollerV5Storage",
+            "label": "lastContributorBlock",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:146"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "moarToken",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:153"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "mProxy",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:158"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "cprotection",
+            "type": "t_contract(MProtection)10479",
+            "src": "contracts/MoartrollerStorage.sol:163"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "tokenAddressToMToken",
+            "type": "t_mapping(t_address,t_contract(MToken)14625)",
+            "src": "contracts/MoartrollerStorage.sol:168"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "liquidityMathModel",
+            "type": "t_contract(LiquidityMathModelInterface)8582",
+            "src": "contracts/MoartrollerStorage.sol:173"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "liquidationModel",
+            "type": "t_contract(LiquidationModelInterface)8541",
+            "src": "contracts/MoartrollerStorage.sol:179"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "privilegedAddresses",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:186"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "rewardClaimEnabled",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:191"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(MProtection)10479": {
+            "label": "contract MProtection"
+          },
+          "t_mapping(t_address,t_contract(MToken)14625)": {
+            "label": "mapping(address => contract MToken)"
+          },
+          "t_contract(MToken)14625": {
+            "label": "contract MToken"
+          },
+          "t_contract(LiquidityMathModelInterface)8582": {
+            "label": "contract LiquidityMathModelInterface"
+          },
+          "t_contract(LiquidationModelInterface)8541": {
+            "label": "contract LiquidationModelInterface"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_contract(MToken)14625)dyn_storage": {
+            "label": "contract MToken[]"
+          },
+          "t_mapping(t_address,t_struct(MoarMarketState)18712_storage)": {
+            "label": "mapping(address => struct MoartrollerV3Storage.MoarMarketState)"
+          },
+          "t_struct(MoarMarketState)18712_storage": {
+            "label": "struct MoartrollerV3Storage.MoarMarketState",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint224"
+              },
+              {
+                "label": "block",
+                "type": "t_uint32"
+              }
+            ]
+          },
+          "t_uint224": {
+            "label": "uint224"
+          },
+          "t_uint32": {
+            "label": "uint32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_struct(Market)18680_storage)": {
+            "label": "mapping(address => struct MoartrollerV2Storage.Market)"
+          },
+          "t_struct(Market)18680_storage": {
+            "label": "struct MoartrollerV2Storage.Market",
+            "members": [
+              {
+                "label": "isListed",
+                "type": "t_bool"
+              },
+              {
+                "label": "collateralFactorMantissa",
+                "type": "t_uint256"
+              },
+              {
+                "label": "accountMembership",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "isMoared",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_contract(PriceOracle)8997": {
+            "label": "contract PriceOracle"
+          },
+          "t_mapping(t_address,t_array(t_contract(MToken)14625)dyn_storage)": {
+            "label": "mapping(address => contract MToken[])"
+          }
+        }
+      }
+    },
+    "6275bf8d704859f77c7cc9219ba57db38f0b985e1b8197d0ea5d4a15fd3a2496": {
+      "address": "0x4301a056617cC13A1A2aB0e3CaBa51BfB1ab3fcB",
+      "txHash": "0xe57f127360dbad7dc22c6be30ac9574058fef105d6d85b75a39310247327edff",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_holderTokens",
+            "type": "t_mapping(t_address,t_struct(UintSet)3050_storage)",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:34"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_tokenOwners",
+            "type": "t_struct(UintToAddressMap)2427_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:37"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_tokenApprovals",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:40"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_operatorApprovals",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:43"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_name",
+            "type": "t_string_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:46"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_symbol",
+            "type": "t_string_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:49"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_tokenURIs",
+            "type": "t_mapping(t_uint256,t_string_storage)",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:52"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "_baseURI",
+            "type": "t_string_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:55"
+          },
+          {
+            "contract": "ERC721Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)41_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol:485"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:20"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:74"
+          },
+          {
+            "contract": "MProtection",
+            "label": "_tokenIds",
+            "type": "t_struct(Counter)4390_storage",
+            "src": "contracts/MProtection.sol:48"
+          },
+          {
+            "contract": "MProtection",
+            "label": "_copMappingAddress",
+            "type": "t_address",
+            "src": "contracts/MProtection.sol:49"
+          },
+          {
+            "contract": "MProtection",
+            "label": "_moartrollerAddress",
+            "type": "t_address",
+            "src": "contracts/MProtection.sol:50"
+          },
+          {
+            "contract": "MProtection",
+            "label": "_underlyingProtectionTokensMapping",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/MProtection.sol:51"
+          },
+          {
+            "contract": "MProtection",
+            "label": "_underlyingProtectionLockedValue",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/MProtection.sol:52"
+          },
+          {
+            "contract": "MProtection",
+            "label": "_protectionCurrencyMapping",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(UintSet)4827_storage))",
+            "src": "contracts/MProtection.sol:53"
+          },
+          {
+            "contract": "MProtection",
+            "label": "_maturityWindow",
+            "type": "t_uint256",
+            "src": "contracts/MProtection.sol:54"
+          }
+        ],
+        "types": {
+          "t_struct(Counter)4390_storage": {
+            "label": "struct Counters.Counter",
+            "members": [
+              {
+                "label": "_value",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(UintSet)4827_storage))": {
+            "label": "mapping(address => mapping(address => struct EnumerableSet.UintSet))"
+          },
+          "t_mapping(t_address,t_struct(UintSet)4827_storage)": {
+            "label": "mapping(address => struct EnumerableSet.UintSet)"
+          },
+          "t_struct(UintSet)4827_storage": {
+            "label": "struct EnumerableSet.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)4441_storage"
+              }
+            ]
+          },
+          "t_struct(Set)4441_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_mapping(t_address,t_struct(UintSet)3050_storage)": {
+            "label": "mapping(address => struct EnumerableSetUpgradeable.UintSet)"
+          },
+          "t_struct(UintSet)3050_storage": {
+            "label": "struct EnumerableSetUpgradeable.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)2664_storage"
+              }
+            ]
+          },
+          "t_struct(Set)2664_storage": {
+            "label": "struct EnumerableSetUpgradeable.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)"
+              }
+            ]
+          },
+          "t_struct(UintToAddressMap)2427_storage": {
+            "label": "struct EnumerableMapUpgradeable.UintToAddressMap",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Map)2109_storage"
+              }
+            ]
+          },
+          "t_struct(Map)2109_storage": {
+            "label": "struct EnumerableMapUpgradeable.Map",
+            "members": [
+              {
+                "label": "_entries",
+                "type": "t_array(t_struct(MapEntry)2101_storage)dyn_storage"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_struct(MapEntry)2101_storage)dyn_storage": {
+            "label": "struct EnumerableMapUpgradeable.MapEntry[]"
+          },
+          "t_struct(MapEntry)2101_storage": {
+            "label": "struct EnumerableMapUpgradeable.MapEntry",
+            "members": [
+              {
+                "label": "_key",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "_value",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_mapping(t_uint256,t_string_storage)": {
+            "label": "mapping(uint256 => string)"
+          },
+          "t_array(t_uint256)41_storage": {
+            "label": "uint256[41]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "ef944084f0c5c737f2a1b52d08779c0cbdc7cf0d2ec1abddf6bb1a7d87c727c7": {
+      "address": "0x66177502f06f3723093Baf11a8FF130D3DE8D438",
+      "txHash": "0xc2ffe3d4556437a3bfe2304b2bafece5991e22032b7cc6380306fb80930de5a5",
+      "layout": {
+        "storage": [
+          {
+            "contract": "MTokenStorage",
+            "label": "_notEntered",
+            "type": "t_bool",
+            "src": "contracts/MTokenStorage.sol:11"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "name",
+            "type": "t_string_storage",
+            "src": "contracts/MTokenStorage.sol:16"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "symbol",
+            "type": "t_string_storage",
+            "src": "contracts/MTokenStorage.sol:21"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "decimals",
+            "type": "t_uint8",
+            "src": "contracts/MTokenStorage.sol:26"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "underlying",
+            "type": "t_address",
+            "src": "contracts/MTokenStorage.sol:31"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "borrowRateMaxMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:37"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "reserveFactorMaxMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:42"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "admin",
+            "type": "t_address_payable",
+            "src": "contracts/MTokenStorage.sol:47"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "pendingAdmin",
+            "type": "t_address_payable",
+            "src": "contracts/MTokenStorage.sol:52"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "moartroller",
+            "type": "t_contract(Moartroller)23083",
+            "src": "contracts/MTokenStorage.sol:57"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "interestRateModel",
+            "type": "t_contract(AbstractInterestRateModel)7287",
+            "src": "contracts/MTokenStorage.sol:62"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "initialExchangeRateMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:67"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "reserveFactorMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:72"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "reserveSplitFactorMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:77"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "accrualBlockNumber",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:82"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "borrowIndex",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:87"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "totalBorrows",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:92"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "totalReserves",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:97"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "totalSupply",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:102"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "maxProtectionComposition",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:107"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "maxProtectionCompositionMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MTokenStorage.sol:112"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "accountTokens",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MTokenStorage.sol:117"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "transferAllowances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MTokenStorage.sol:122"
+          },
+          {
+            "contract": "MTokenStorage",
+            "label": "accountBorrows",
+            "type": "t_mapping(t_address,t_struct(BorrowSnapshot)18210_storage)",
+            "src": "contracts/MTokenStorage.sol:152"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_contract(Moartroller)23083": {
+            "label": "contract Moartroller"
+          },
+          "t_contract(AbstractInterestRateModel)7287": {
+            "label": "contract AbstractInterestRateModel"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_struct(BorrowSnapshot)18210_storage)": {
+            "label": "mapping(address => struct MTokenStorage.BorrowSnapshot)"
+          },
+          "t_struct(BorrowSnapshot)18210_storage": {
+            "label": "struct MTokenStorage.BorrowSnapshot",
+            "members": [
+              {
+                "label": "principal",
+                "type": "t_uint256"
+              },
+              {
+                "label": "interestIndex",
+                "type": "t_uint256"
+              },
+              {
+                "label": "protectionsUsed",
+                "type": "t_mapping(t_uint256,t_struct(ProtectionUsage)18201_storage)"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_struct(ProtectionUsage)18201_storage)": {
+            "label": "mapping(uint256 => struct MTokenStorage.ProtectionUsage)"
+          },
+          "t_struct(ProtectionUsage)18201_storage": {
+            "label": "struct MTokenStorage.ProtectionUsage",
+            "members": [
+              {
+                "label": "protectionValueUsed",
+                "type": "t_uint256"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "1b4f14d08c4fe81279a68095b51dfa33118495a6755aec93db470a0235ead5b5": {
+      "address": "0x075CC7FA37ee0305512d1c5e2caE5D9A8F7ea5c6",
+      "txHash": "0x6beda477a74d9d5bed1368b3c7b981ce0dbe7214a8367a5dd1d362701d58ab7f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "admin",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:14"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "pendingAdmin",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:19"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "moartrollerImplementation",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:24"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "pendingMoartrollerImplementation",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:29"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "oracle",
+            "type": "t_contract(PriceOracle)11965",
+            "src": "contracts/MoartrollerStorage.sol:37"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "closeFactorMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:42"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "liquidationIncentiveMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:47"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "maxAssets",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:52"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "accountAssets",
+            "type": "t_mapping(t_address,t_array(t_contract(MToken)18157)dyn_storage)",
+            "src": "contracts/MoartrollerStorage.sol:57"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "markets",
+            "type": "t_mapping(t_address,t_struct(Market)23228_storage)",
+            "src": "contracts/MoartrollerStorage.sol:82"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "pauseGuardian",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:90"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "_mintGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:91"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "_borrowGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:92"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "transferGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:93"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "seizeGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:94"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "mintGuardianPaused",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/MoartrollerStorage.sol:95"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "borrowGuardianPaused",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/MoartrollerStorage.sol:96"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "allMarkets",
+            "type": "t_array(t_contract(MToken)18157)dyn_storage",
+            "src": "contracts/MoartrollerStorage.sol:109"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarRate",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:112"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSpeeds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:115"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSupplyState",
+            "type": "t_mapping(t_address,t_struct(MoarMarketState)23260_storage)",
+            "src": "contracts/MoartrollerStorage.sol:118"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarBorrowState",
+            "type": "t_mapping(t_address,t_struct(MoarMarketState)23260_storage)",
+            "src": "contracts/MoartrollerStorage.sol:121"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSupplierIndex",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MoartrollerStorage.sol:124"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarBorrowerIndex",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MoartrollerStorage.sol:127"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarAccrued",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:130"
+          },
+          {
+            "contract": "MoartrollerV4Storage",
+            "label": "borrowCapGuardian",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:135"
+          },
+          {
+            "contract": "MoartrollerV4Storage",
+            "label": "borrowCaps",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:138"
+          },
+          {
+            "contract": "MoartrollerV5Storage",
+            "label": "moarContributorSpeeds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:143"
+          },
+          {
+            "contract": "MoartrollerV5Storage",
+            "label": "lastContributorBlock",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:146"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "moarToken",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:153"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "mProxy",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:158"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "cprotection",
+            "type": "t_contract(MProtection)13948",
+            "src": "contracts/MoartrollerStorage.sol:163"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "tokenAddressToMToken",
+            "type": "t_mapping(t_address,t_contract(MToken)18157)",
+            "src": "contracts/MoartrollerStorage.sol:168"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "liquidityMathModel",
+            "type": "t_contract(LiquidityMathModelInterface)11550",
+            "src": "contracts/MoartrollerStorage.sol:173"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "liquidationModel",
+            "type": "t_contract(LiquidationModelInterface)11509",
+            "src": "contracts/MoartrollerStorage.sol:179"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "privilegedAddresses",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:186"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "rewardClaimEnabled",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:191"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(MProtection)13948": {
+            "label": "contract MProtection"
+          },
+          "t_mapping(t_address,t_contract(MToken)18157)": {
+            "label": "mapping(address => contract MToken)"
+          },
+          "t_contract(MToken)18157": {
+            "label": "contract MToken"
+          },
+          "t_contract(LiquidityMathModelInterface)11550": {
+            "label": "contract LiquidityMathModelInterface"
+          },
+          "t_contract(LiquidationModelInterface)11509": {
+            "label": "contract LiquidationModelInterface"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_contract(MToken)18157)dyn_storage": {
+            "label": "contract MToken[]"
+          },
+          "t_mapping(t_address,t_struct(MoarMarketState)23260_storage)": {
+            "label": "mapping(address => struct MoartrollerV3Storage.MoarMarketState)"
+          },
+          "t_struct(MoarMarketState)23260_storage": {
+            "label": "struct MoartrollerV3Storage.MoarMarketState",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint224"
+              },
+              {
+                "label": "block",
+                "type": "t_uint32"
+              }
+            ]
+          },
+          "t_uint224": {
+            "label": "uint224"
+          },
+          "t_uint32": {
+            "label": "uint32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_struct(Market)23228_storage)": {
+            "label": "mapping(address => struct MoartrollerV2Storage.Market)"
+          },
+          "t_struct(Market)23228_storage": {
+            "label": "struct MoartrollerV2Storage.Market",
+            "members": [
+              {
+                "label": "isListed",
+                "type": "t_bool"
+              },
+              {
+                "label": "collateralFactorMantissa",
+                "type": "t_uint256"
+              },
+              {
+                "label": "accountMembership",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "isMoared",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_contract(PriceOracle)11965": {
+            "label": "contract PriceOracle"
+          },
+          "t_mapping(t_address,t_array(t_contract(MToken)18157)dyn_storage)": {
+            "label": "mapping(address => contract MToken[])"
+          }
+        }
+      }
+    },
+    "50e4bf11ef59a28a003c7aa5a87200651605fc98478ac3db8b473a5fbae69f1c": {
+      "address": "0x36BF660518f6A8a391B444A7AeBE5F8589fcf253",
+      "txHash": "0x3400ca533fc09dd1a7f371150957439f513418a23a0106e938c6508384b9e230",
+      "layout": {
+        "storage": [
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "admin",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:14"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "pendingAdmin",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:19"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "moartrollerImplementation",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:24"
+          },
+          {
+            "contract": "UnitrollerAdminStorage",
+            "label": "pendingMoartrollerImplementation",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:29"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "oracle",
+            "type": "t_contract(PriceOracle)8997",
+            "src": "contracts/MoartrollerStorage.sol:37"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "closeFactorMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:42"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "liquidationIncentiveMantissa",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:47"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "maxAssets",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:52"
+          },
+          {
+            "contract": "MoartrollerV1Storage",
+            "label": "accountAssets",
+            "type": "t_mapping(t_address,t_array(t_contract(MToken)14423)dyn_storage)",
+            "src": "contracts/MoartrollerStorage.sol:57"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "markets",
+            "type": "t_mapping(t_address,t_struct(Market)18526_storage)",
+            "src": "contracts/MoartrollerStorage.sol:82"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "pauseGuardian",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:90"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "_mintGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:91"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "_borrowGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:92"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "transferGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:93"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "seizeGuardianPaused",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:94"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "mintGuardianPaused",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/MoartrollerStorage.sol:95"
+          },
+          {
+            "contract": "MoartrollerV2Storage",
+            "label": "borrowGuardianPaused",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/MoartrollerStorage.sol:96"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "allMarkets",
+            "type": "t_array(t_contract(MToken)14423)dyn_storage",
+            "src": "contracts/MoartrollerStorage.sol:109"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarRate",
+            "type": "t_uint256",
+            "src": "contracts/MoartrollerStorage.sol:112"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSpeeds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:115"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSupplyState",
+            "type": "t_mapping(t_address,t_struct(MoarMarketState)18558_storage)",
+            "src": "contracts/MoartrollerStorage.sol:118"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarBorrowState",
+            "type": "t_mapping(t_address,t_struct(MoarMarketState)18558_storage)",
+            "src": "contracts/MoartrollerStorage.sol:121"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarSupplierIndex",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MoartrollerStorage.sol:124"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarBorrowerIndex",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/MoartrollerStorage.sol:127"
+          },
+          {
+            "contract": "MoartrollerV3Storage",
+            "label": "moarAccrued",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:130"
+          },
+          {
+            "contract": "MoartrollerV4Storage",
+            "label": "borrowCapGuardian",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:135"
+          },
+          {
+            "contract": "MoartrollerV4Storage",
+            "label": "borrowCaps",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:138"
+          },
+          {
+            "contract": "MoartrollerV5Storage",
+            "label": "moarContributorSpeeds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:143"
+          },
+          {
+            "contract": "MoartrollerV5Storage",
+            "label": "lastContributorBlock",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:146"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "moarToken",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:153"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "mProxy",
+            "type": "t_address",
+            "src": "contracts/MoartrollerStorage.sol:158"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "cprotection",
+            "type": "t_contract(MProtection)10277",
+            "src": "contracts/MoartrollerStorage.sol:163"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "tokenAddressToMToken",
+            "type": "t_mapping(t_address,t_contract(MToken)14423)",
+            "src": "contracts/MoartrollerStorage.sol:168"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "liquidityMathModel",
+            "type": "t_contract(LiquidityMathModelInterface)8582",
+            "src": "contracts/MoartrollerStorage.sol:173"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "liquidationModel",
+            "type": "t_contract(LiquidationModelInterface)8541",
+            "src": "contracts/MoartrollerStorage.sol:179"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "privilegedAddresses",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/MoartrollerStorage.sol:186"
+          },
+          {
+            "contract": "MoartrollerV6Storage",
+            "label": "rewardClaimEnabled",
+            "type": "t_bool",
+            "src": "contracts/MoartrollerStorage.sol:191"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(MProtection)10277": {
+            "label": "contract MProtection"
+          },
+          "t_mapping(t_address,t_contract(MToken)14423)": {
+            "label": "mapping(address => contract MToken)"
+          },
+          "t_contract(MToken)14423": {
+            "label": "contract MToken"
+          },
+          "t_contract(LiquidityMathModelInterface)8582": {
+            "label": "contract LiquidityMathModelInterface"
+          },
+          "t_contract(LiquidationModelInterface)8541": {
+            "label": "contract LiquidationModelInterface"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_contract(MToken)14423)dyn_storage": {
+            "label": "contract MToken[]"
+          },
+          "t_mapping(t_address,t_struct(MoarMarketState)18558_storage)": {
+            "label": "mapping(address => struct MoartrollerV3Storage.MoarMarketState)"
+          },
+          "t_struct(MoarMarketState)18558_storage": {
+            "label": "struct MoartrollerV3Storage.MoarMarketState",
+            "members": [
+              {
+                "label": "index",
+                "type": "t_uint224"
+              },
+              {
+                "label": "block",
+                "type": "t_uint32"
+              }
+            ]
+          },
+          "t_uint224": {
+            "label": "uint224"
+          },
+          "t_uint32": {
+            "label": "uint32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_struct(Market)18526_storage)": {
+            "label": "mapping(address => struct MoartrollerV2Storage.Market)"
+          },
+          "t_struct(Market)18526_storage": {
+            "label": "struct MoartrollerV2Storage.Market",
+            "members": [
+              {
+                "label": "isListed",
+                "type": "t_bool"
+              },
+              {
+                "label": "collateralFactorMantissa",
+                "type": "t_uint256"
+              },
+              {
+                "label": "accountMembership",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "isMoared",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_contract(PriceOracle)8997": {
+            "label": "contract PriceOracle"
+          },
+          "t_mapping(t_address,t_array(t_contract(MToken)14423)dyn_storage)": {
+            "label": "mapping(address => contract MToken[])"
+          }
+        }
+      }
+    }
+  }
+}

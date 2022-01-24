@@ -22,6 +22,11 @@ contract ERCFund is Ownable {
     uint256 public fee = 200;
     uint256 public feeMAX = 10000;
 
+    event SetFeeDistributor(address indexed oldFeeDistributor, address indexed newFeeDistributor);
+    event SetFeeSharingEnabled(bool enabled);
+    event SetDefaultConversionAsset(address indexed oldDefaultConversionAsset, address indexed newDefaultConversionAsset);
+    event SetFee(uint256 oldFee, uint256 newFee);
+
     constructor(address distributor) public {
         feeDistributor = distributor;
     }
@@ -94,19 +99,23 @@ contract ERCFund is Ownable {
     /* ========== SETTER FUNCTIONS ========== */
 
     function setFeeDistributor(address distributor) public onlyOwner {
+        emit SetFeeDistributor(feeDistributor, distributor);
         feeDistributor = distributor;
     }
 
     function setFeeSharingEnabled(bool enabled) public onlyOwner {
+        emit SetFeeSharingEnabled(enabled);
         feeSharingEnabled = enabled;
     }
 
     function setDefaultConversionAsset(address asset) public onlyOwner {
+        SetDefaultConversionAsset(defaultConversion, asset);
         defaultConversion = asset;
     }
 
     function setFee(uint256 _fee) public onlyOwner {
-        require(_fee <= 3000);
+        require(_fee <= feeMAX,"ERCFund: input _fee exceeded feeMAX");
+        emit SetFee(fee, _fee);
         fee = _fee;
     }
 
@@ -126,7 +135,7 @@ contract ERCFund is Ownable {
         address _to,
         uint256 _amount
     ) internal {
-        require(_to != address(0));
+        require(_to != address(0),"ERCFund: input _to is address(0)");
 
         // Swap with uniswap
         IERC20(_from).safeApprove(currentRouter, 0);
@@ -158,7 +167,7 @@ contract ERCFund is Ownable {
         address[] memory path,
         uint256 _amount
     ) internal {
-        require(path[1] != address(0));
+        require(path[1] != address(0),"ERCFund: input path[1] is address(0)");
 
         // Swap with uniswap
         IERC20(path[0]).safeApprove(currentRouter, 0);
@@ -177,7 +186,7 @@ contract ERCFund is Ownable {
         address[] memory path,
         uint256 _amount
     ) internal {
-        require(path[1] != address(0));
+        require(path[1] != address(0),"ERCFund: input path[1] is address(0)");
 
         // Swap with uniswap
         IERC20(path[0]).safeApprove(currentRouter, 0);

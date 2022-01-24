@@ -142,11 +142,7 @@ contract MWeth is MToken {
      * @notice Send Ether to MEther to mint
      */
     receive () external payable {
-        if(msg.sender != underlying){
-             WETHInterface(underlying).deposit{value : msg.value}();
-            (uint err,) = mintInternal(msg.value);
-            requireNoError(err, "mint failed");
-        }
+        //there are not recommended to implement some code, because tranfer costs 2300 gas and extra code increases this amount 
     }
 
     /**

@@ -82,6 +82,11 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      */
     event NewReserveFactor(uint oldReserveFactorMantissa, uint newReserveFactorMantissa);
 
+     /**
+     * @notice Event emitted when the split reserve factor is changed
+     */
+    event NewSplitReserveFactor(uint oldReserveFactorMantissa, uint newReserveFactorMantissa);
+
     /**
      * @notice Event emitted when the reserves are added
      */
@@ -223,9 +228,6 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         /* We emit a Transfer event */
         emit Transfer(src, dst, tokens);
-
-        // unused function
-        // moartroller.transferVerify(address(this), src, dst, tokens);
 
         return uint(Error.NO_ERROR);
     }
@@ -959,11 +961,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         /* We emit a Borrow event */
         emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
-
-        /* We call the defense hook */
-        //unused function
-        // moartroller.borrowVerify(address(this), borrower, borrowAmount);
-
+       
         return uint(Error.NO_ERROR);
     }
 
@@ -1185,10 +1183,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         /* We emit a LiquidateBorrow event */
         emit LiquidateBorrow(liquidator, borrower, actualRepayAmount, address(mTokenCollateral), seizeTokens);
 
-        /* We call the defense hook */
-        // unused function
-        // moartroller.liquidateBorrowVerify(address(this), address(mTokenCollateral), liquidator, borrower, actualRepayAmount, seizeTokens);
-
+       
         return (uint(Error.NO_ERROR), actualRepayAmount);
     }
 
@@ -1358,7 +1353,11 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
     }
 
     function _setReserveSplitFactor(uint newReserveSplitFactorMantissa) external nonReentrant returns (uint) {
-         if (msg.sender != admin) {
+       // Check newReserveSplitFactorMantissa ≤ maxReserveFactor
+        if (newReserveSplitFactorMantissa > reserveFactorMaxMantissa) {
+            return fail(Error.BAD_INPUT, FailureInfo.SET_RESERVE_FACTOR_BOUNDS_CHECK);
+        }
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_RESERVE_FACTOR_ADMIN_CHECK);
         }
         reserveSplitFactorMantissa = newReserveSplitFactorMantissa;

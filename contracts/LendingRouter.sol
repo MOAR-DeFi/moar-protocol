@@ -111,6 +111,7 @@ contract LendingRouter is IERC721Receiver, Ownable{
      * @notice Called when contract receives ERC-721 token
      */
     function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external override returns (bytes4){
+        data;
         emit ProtectionReceived(operator, from, tokenId);
         return this.onERC721Received.selector;
     }

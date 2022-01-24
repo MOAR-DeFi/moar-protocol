@@ -103,7 +103,7 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
         public
         onlyOwner
     {
-        require(rewardData[_rewardsToken].lastUpdateTime == 0);
+        require(rewardData[_rewardsToken].lastUpdateTime == 0, "MultiFeeDistribution: lastUpdateTime is not zero");
         rewardTokens.push(_rewardsToken);
         rewardData[_rewardsToken].lastUpdateTime = block.timestamp;
         rewardDistributors[_rewardsToken][_distributor] = true;
@@ -115,7 +115,7 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
         address _distributor,
         bool _approved
     ) external onlyOwner {
-        require(rewardData[_rewardsToken].lastUpdateTime > 0);
+        require(rewardData[_rewardsToken].lastUpdateTime > 0, "MultiFeeDistribution: lastUpdateTime is zero");
         rewardDistributors[_rewardsToken][_distributor] = _approved;
     }
 
@@ -159,16 +159,16 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
     }
 
     // Address and claimable amount of all reward tokens for the given account
-    function claimableRewards(address account) external view returns (RewardData[] memory rewards) {
-        rewards = new RewardData[](rewardTokens.length);
-        for (uint256 i = 0; i < rewards.length; i++) {
+    function claimableRewards(address account) external view returns (RewardData[] memory crewards) {
+        crewards = new RewardData[](rewardTokens.length);
+        for (uint256 i = 0; i < crewards.length; i++) {
             // If i == 0 this is the stakingReward, distribution is based on locked balances
             uint256 balance = i == 0 ? balances[account].locked : balances[account].total;
             uint256 supply = i == 0 ? lockedSupply : totalSupply;
-            rewards[i].token = rewardTokens[i];
-            rewards[i].amount = _earned(account, rewards[i].token, balance, supply);
+            crewards[i].token = rewardTokens[i];
+            crewards[i].amount = _earned(account, crewards[i].token, balance, supply);
         }
-        return rewards;
+        return crewards;
     }
 
     // Total balance of an account, including unlocked, locked and earned tokens
@@ -257,8 +257,8 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
                 }
                 amountWithoutPenalty = amountWithoutPenalty.add(earnedAmount);
             }
-
-            penaltyAmount = bal.earned.sub(amountWithoutPenalty).mul(penalty).div(100);
+            uint256 penaltyDecimals = 100;
+            penaltyAmount = bal.earned.sub(amountWithoutPenalty).mul(penalty).div(penaltyDecimals);
         }
         amount = bal.unlocked.add(bal.earned).sub(penaltyAmount);
         return (amount, penaltyAmount);
@@ -295,7 +295,7 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
     // Minted tokens receive rewards normally but incur a 50% penalty when
     // withdrawn before lockDuration has passed.
     function mint(address user, uint256 amount) external updateReward(user) {
-        require(minters[msg.sender]);
+        require(minters[msg.sender], "MultiFeeDistribution: msg.sender is not minter");
         totalSupply = totalSupply.add(amount);
         Balances storage bal = balances[user];
         bal.total = bal.total.add(amount);
@@ -448,7 +448,7 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
     }
 
     function notifyRewardAmount(address _rewardsToken, uint256 reward) external updateReward(address(0)) {
-        require(rewardDistributors[_rewardsToken][msg.sender]);
+        require(rewardDistributors[_rewardsToken][msg.sender], "MultiFeeDistribution: msg.sender is not rewardDistributor");
         require(reward > 0, "No reward");
         // handle the transfer of reward tokens via `transferFrom` to reduce the number
         // of transactions required and ensure correctness of the reward amount
@@ -466,10 +466,13 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
     }
 
     function setMinter(address minter, bool active) external onlyOwner {
+        emit SetMinter(minter, active);
        minters[minter] = active;
     }
 
     function setPenalty(uint256 _penalty) external onlyOwner {
+        // should be validation
+        emit SetPenalty(penalty, _penalty);
        penalty = _penalty;
     }
 
@@ -509,4 +512,6 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
     event RewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
     event RewardsDurationUpdated(address token, uint256 newDuration);
     event Recovered(address token, uint256 amount);
+    event SetMinter(address indexed user, bool active);
+    event SetPenalty(uint256 oldPenalty, uint256 newPenalty);
 }

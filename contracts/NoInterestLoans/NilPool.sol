@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./Interfaces/NilPoolInterface.sol";
 import "./Interfaces/StrategyInterface.sol";
-import "../Interfaces/PriceOracle.sol";
-import "../Interfaces/Uniswap/IUniswapV2Router02.sol";
+import "./Interfaces/PriceOracle.sol";
+import "./Interfaces/Uniswap/IUniswapV2Router02.sol";
 import "./NilController.sol";
 import "hardhat/console.sol";
 
@@ -29,24 +29,24 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     PriceOracle                             public oracle;
     ERC20                                   public inputAsset;
     StrategyInterface                       public strategy;
-    NilController                           public nilController;
-    IUniswapV2Router02                      private swapRouter;
-    address[]                               private swapPath;
-    uint256                                 public collateralFactor;
-    uint256                                 public closeFactor;
-    uint256                                 public liquidationIncentive;
-    uint256                                 public performanceFee;
-    uint256                                 public totalDeposits;
-    uint256                                 public totalShares;
-    uint256                                 public totalBorrows;
+    NilController                           public nilController;           
+    IUniswapV2Router02                      private swapRouter;     
+    address[]                               private swapPath;           // path from inputAsset to stableMoar
+    uint256                                 public collateralFactor;    // [collateralFactor] = 1 / 10**18
+    uint256                                 public closeFactor;         // [closeFactor] = 1 / 10**18
+    uint256                                 public liquidationIncentive;// [liquidationIncentive] = 1
+    uint256                                 public performanceFee;      // [performanceFee] = 1
+    uint256                                 public totalDeposits;       // [totalDeposits] = inputAsset;
+    uint256                                 public totalShares;         // [totalShares] = lpToken
+    uint256                                 public totalBorrows;        // [totalBorrows]
     mapping(address => UserData)            public userData;
 
     /* ========== DATA STRUCTURES ========= */
 
     struct UserData {
-        uint256 deposit;
-        uint256 shares;
-        uint256 borrow;
+        uint256 deposit;    // [deposit] = inputAsset
+        uint256 shares;     // [shares] = lpToken
+        uint256 borrow;     // [borrow] = 
     }
 
     /* ========== EVENTS ========== */
@@ -88,7 +88,7 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     /* ========== NIL MUTATIVE ========== */
 
     /**
-     * @dev Deposit
+     * @dev Deposit inputAssset and stake it to farming
      */
     function deposit(uint amount) external override nonReentrant {
         updateState();
@@ -110,7 +110,7 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     }
 
     /**
-     * @dev Withdraw
+     * @dev Withdraw inputAsset and unstake it from farming
      */
     function withdraw(uint amount) public override nonReentrant {
         updateState();
@@ -142,7 +142,7 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     }
     
     /**
-     * @dev Borrow
+     * @dev Borrow the stableMoar
      */
     function borrow(uint amount) external override nonReentrant {
         updateState();
@@ -165,7 +165,7 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     }
 
     /**
-     * @dev Repay
+     * @dev Repay the stableMoar
      */
     function repay(uint amount) public override nonReentrant {
         updateState();
@@ -186,7 +186,7 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
         
         nilController.burnStableMoar(user, amount);
 
-        uint256 amountAfterFee = amount.div(uint256(1e18).add(performanceFee)).mul(1e18);
+        uint256 amountAfterFee = amount.mul(1e18).div(uint256(1e18).add(performanceFee));
 
         userData[user].borrow = userData[user].borrow.sub(amountAfterFee);
         totalBorrows = totalBorrows.sub(amountAfterFee);    
@@ -195,7 +195,7 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     }
 
     /**
-     * @dev Liquidate
+     * @dev Liquidate the inputAsset by providing stableMoar
      */
     function liquidate(address userToLiquidate, uint amount) external override nonReentrant { 
         liquidateInternal(msg.sender, userToLiquidate, amount);
@@ -239,30 +239,34 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
 
     function updateState() internal {
         if(userData[msg.sender].borrow > 0){
-            uint256 underlyingBalanceOfUser = underlyingBalanceOf(msg.sender);
+            uint256 underlyingBalanceOfUser = underlyingBalanceOf(msg.sender); // [underlyingBalanceOfUser] = inputAsset
             if(underlyingBalanceOfUser > userData[msg.sender].deposit){
-                uint256 diff = underlyingBalanceOfUser.sub(userData[msg.sender].deposit);
-                uint256 diffInStableMoar = swapRouter.getAmountsOut(diff, swapPath)[swapPath.length - 1];
+                uint256 dust = 10**12;
+                uint256 diff = underlyingBalanceOfUser.sub(userData[msg.sender].deposit); //diff is yield earned in farming, [diff] = inputAsset
+               
 
-                if(diffInStableMoar > userData[msg.sender].borrow){
-                    diffInStableMoar = userData[msg.sender].borrow;
-                }
-
-                uint256 sharesToWithdraw = userData[msg.sender].shares.mul(diff).div(underlyingBalanceOfUser);
+                uint256 sharesToWithdraw = userData[msg.sender].shares.mul(diff).div(underlyingBalanceOfUser); // [sharesToWithdraw] = lpToken
                 userData[msg.sender].shares = userData[msg.sender].shares.sub(sharesToWithdraw);
                 totalShares = totalShares.sub(sharesToWithdraw);
 
-                uint256 balanceBefore = inputAsset.balanceOf(address(this));
-                uint256 withdrawnUnderlying = strategy.withdraw(sharesToWithdraw);
+                uint256 balanceBefore = inputAsset.balanceOf(address(this));        // [balanceBefore] = inputAsset
+                uint256 withdrawnUnderlying = strategy.withdraw(sharesToWithdraw);  // [withdrawnUnderlying] = inputAsset
 
-                inputAsset.approve(address(swapRouter), withdrawnUnderlying);
-                swapRouter.swapTokensForExactTokens(diffInStableMoar, withdrawnUnderlying, swapPath, msg.sender, now.add(1800));
+                uint256 diffInStableMoar = swapRouter.getAmountsOut(withdrawnUnderlying, swapPath)[swapPath.length - 1]; // [diffInStableMoar] = stableMoar
+                if(diffInStableMoar > userData[msg.sender].borrow){ //diffInStableMoar cant be more that borrow
+                    diffInStableMoar = userData[msg.sender].borrow;
+                }
+                require(diffInStableMoar > 0, "DiffInStableMoar==0");
+                require(diff > dust && withdrawnUnderlying > dust, "Diff or withdrawnUnderlying is less than 10**12");
+                inputAsset.approve(address(swapRouter), withdrawnUnderlying); // give permission to transferFrom inputAsset to uniswapRouter
+                swapRouter.swapTokensForExactTokens(diffInStableMoar, withdrawnUnderlying, swapPath, msg.sender, now.add(1800)); // msg.sender receives stableMoar
 
                 repayInternal(msg.sender, diffInStableMoar);
                 
                 uint256 excess = inputAsset.balanceOf(address(this)).sub(balanceBefore);
-                depositInternal(msg.sender, excess);
-                
+                if(excess > 0){
+                    depositInternal(msg.sender, excess);
+                }
             }
         }
     }
@@ -274,6 +278,7 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     }
 
     function underlyingBalanceOf(address user) public view override returns (uint256) {
+        require(totalShares != 0, "totalShares == 0");
         return strategy.underlyingBalance().mul(userData[user].shares).div(totalShares);
     }
 
@@ -306,18 +311,30 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
     /* ========== ADMIN CONFIGURATION ========== */
 
     function setCollateralFactor(uint256 _collateralFactor) external onlyOwner {
+        require(_collateralFactor <= 10**18, "Invalid collateral factor");
+        emit SetCollateralFactor(collateralFactor, _collateralFactor);
         collateralFactor = _collateralFactor;
     }
 
     function setCloseFactor(uint256 _closeFactor) external onlyOwner {
+        require(_closeFactor <= 10**18, "Invalid collateral factor");
+        emit SetCloseFactor(closeFactor, _closeFactor);
         closeFactor = _closeFactor;
     }
 
     function setLiquidationIncentive(uint256 _liquidationIncentive) external onlyOwner {
+        require(_liquidationIncentive >= 10**18, "Invalid liquidationIncective");
+        emit SetLiquidationIncentive(liquidationIncentive, _liquidationIncentive);
         liquidationIncentive = _liquidationIncentive;
     }
 
     function setPerformanceFee(uint256 _performanceFee) external onlyOwner {
+        emit SetPerformanceFee(performanceFee, _performanceFee);
         performanceFee = _performanceFee;
     }
+
+    event SetCollateralFactor(uint256 oldColateralFactor, uint256 newColateralFactor);
+    event SetCloseFactor(uint256 oldCloseFactor, uint256 newCloseFactor);
+    event SetLiquidationIncentive(uint256 oldLiquidationIncentive, uint256 newLiquidationIncentive);
+    event SetPerformanceFee(uint256 oldPerformanceFee, uint256 newPerformanceFee);
 } 

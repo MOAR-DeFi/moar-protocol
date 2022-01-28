@@ -1360,6 +1360,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_RESERVE_FACTOR_ADMIN_CHECK);
         }
+        emit NewSplitReserveFactor(reserveSplitFactorMantissa, newReserveSplitFactorMantissa);
+
         reserveSplitFactorMantissa = newReserveSplitFactorMantissa;
         return uint(Error.NO_ERROR);
     }

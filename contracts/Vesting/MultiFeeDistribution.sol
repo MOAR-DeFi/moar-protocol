@@ -471,7 +471,7 @@ contract MultiFeeDistribution is ReentrancyGuard, Ownable {
     }
 
     function setPenalty(uint256 _penalty) external onlyOwner {
-        // should be validation
+        require(_penalty <=100,"invalid penalty");
         emit SetPenalty(penalty, _penalty);
        penalty = _penalty;
     }

@@ -37,6 +37,7 @@ contract ERCFund is Ownable {
             _swapUniswap(token, defaultConversion, balance);
         }
         notifyFeeDistribution(defaultConversion);
+        emit Notified(token);
     }
 
     function notifyFeeDistribution(address token) public {
@@ -45,6 +46,7 @@ contract ERCFund is Ownable {
         IERC20(token).safeApprove(feeDistributor, 0);
         IERC20(token).safeApprove(feeDistributor, balance);
         IMultiFeeDistribution(feeDistributor).notifyRewardAmount(token, balance);
+        emit Notified(token);
     }
     
     //Doesn't support Fee on Transfer tokens, convert those to something else first
@@ -55,6 +57,7 @@ contract ERCFund is Ownable {
         IERC20(token).safeApprove(feeDistributor, 0);
         IERC20(token).safeApprove(feeDistributor, amount);
         IMultiFeeDistribution(feeDistributor).notifyRewardAmount(token, amount);
+        emit Notified(token);
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -126,6 +129,7 @@ contract ERCFund is Ownable {
         if (_token > 0) {
             IERC20(token).safeTransfer(msg.sender, _token);
         }
+        emit Recovered(token);
     }
 
     /* ========== UNISWAP FUNCTIONS ========== */

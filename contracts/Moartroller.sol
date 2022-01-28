@@ -109,6 +109,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         liquidityMathModel = mathModel;
         liquidationModel = lqdModel;
         rewardClaimEnabled = false;
+        moartrollerImplementation = address(this);
     }
 
     /*** Assets You Are In ***/
@@ -708,7 +709,8 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         for (uint i = 0; i < numOfProtections; i++) {
             uint cProtectionId = cprotection.getUserUnderlyingProtectionTokenIdByCurrency(account, currency, i);
             if(cprotection.isProtectionAlive(cProtectionId)){
-                protectionLockedAmount = protectionLockedAmount + cprotection.getUnderlyingProtectionLockedAmount(cProtectionId);
+                //protectionLockedAmount = protectionLockedAmount + cprotection.getUnderlyingProtectionLockedAmount(cProtectionId);
+                protectionLockedAmount = add_(protectionLockedAmount, cprotection.getUnderlyingProtectionLockedAmount(cProtectionId), "protectionLockedAmount add overflow");
             }
         }
 

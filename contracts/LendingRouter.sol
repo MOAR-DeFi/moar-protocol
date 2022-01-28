@@ -8,6 +8,7 @@ import "./Interfaces/Cop/IUUNNRegistry.sol";
 import "./Interfaces/MErc20Interface.sol";
 import "./Interfaces/EIP20Interface.sol";
 import "./MProtection.sol";
+import "./Utils/SafeEIP20.sol";
 
 /**
  * @title MOAR's LendingRouter Contract
@@ -15,6 +16,8 @@ import "./MProtection.sol";
  * @author MOAR
  */
 contract LendingRouter is IERC721Receiver, Ownable{
+
+    using SafeEIP20 for EIP20Interface;
 
     /**
      * @notice Event emitted when C-OP is received by LendingRouter contract
@@ -67,7 +70,7 @@ contract LendingRouter is IERC721Receiver, Ownable{
      * @param amount Amount of token to rescue
      */
     function rescueBaseCurrency(address to, uint256 amount) onlyOwner public {
-        baseCurrency.transfer(to, amount);
+        baseCurrency.safeTransfer(to, amount);
     }
 
     /**
@@ -84,8 +87,8 @@ contract LendingRouter is IERC721Receiver, Ownable{
      * @param signature Signature used to validate data passed to Protection Seller contract
      */
     function purchaseProtectionAndMakeBorrow(IOCProtectionSeller protectionSeller, MErc20Interface merc20Token, uint256 borrowAmount, address pool, uint256 validTo, uint256 amount, uint256 strike, uint256 deadline, uint256[11] memory data, bytes memory signature) public {
-        baseCurrency.transferFrom(msg.sender, address(this), data[1]);
-        baseCurrency.approve(address(protectionSeller), data[1]);
+        baseCurrency.safeTransferFrom(msg.sender, address(this), data[1]);
+        baseCurrency.safeApprove(address(protectionSeller), data[1]);
         protectionSeller.create(pool, validTo, amount, strike, deadline, data, signature);
         uint256 underlyingTokenId = data[0];
         protectionToken.approve(address(cProtectionToken), underlyingTokenId);

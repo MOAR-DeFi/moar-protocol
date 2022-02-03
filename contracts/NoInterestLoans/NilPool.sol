@@ -256,16 +256,17 @@ contract NilPool is NilPoolInterface, ReentrancyGuard, Ownable {
                 if(diffInStableMoar > userData[msg.sender].borrow){ //diffInStableMoar cant be more that borrow
                     diffInStableMoar = userData[msg.sender].borrow;
                 }
-                require(diffInStableMoar > 0, "DiffInStableMoar==0");
-                require(diff > dust && withdrawnUnderlying > dust, "Diff or withdrawnUnderlying is less than 10**12");
-                inputAsset.approve(address(swapRouter), withdrawnUnderlying); // give permission to transferFrom inputAsset to uniswapRouter
-                swapRouter.swapTokensForExactTokens(diffInStableMoar, withdrawnUnderlying, swapPath, msg.sender, now.add(1800)); // msg.sender receives stableMoar
+                if(diffInStableMoar > 0){
+                    require(diff > dust && withdrawnUnderlying > dust, "Diff or withdrawnUnderlying is less than 10**12");
+                    inputAsset.approve(address(swapRouter), withdrawnUnderlying); // give permission to transferFrom inputAsset to uniswapRouter
+                    swapRouter.swapTokensForExactTokens(diffInStableMoar, withdrawnUnderlying, swapPath, msg.sender, now.add(1800)); // msg.sender receives stableMoar
 
-                repayInternal(msg.sender, diffInStableMoar);
-                
-                uint256 excess = inputAsset.balanceOf(address(this)).sub(balanceBefore);
-                if(excess > 0){
-                    depositInternal(msg.sender, excess);
+                    repayInternal(msg.sender, diffInStableMoar);
+                    
+                    uint256 excess = inputAsset.balanceOf(address(this)).sub(balanceBefore);
+                    if(excess > 0){
+                        depositInternal(msg.sender, excess);
+                    }
                 }
             }
         }

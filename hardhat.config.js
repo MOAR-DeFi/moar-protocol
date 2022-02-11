@@ -4,6 +4,7 @@ require("hardhat-gas-reporter")
 require("@nomiclabs/hardhat-etherscan")
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
+require('hardhat-contract-sizer');
 
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
@@ -105,5 +106,12 @@ module.exports = {
   },
   mocha: {
     timeout: 60000
+  },
+  contractSizer: {
+    alphaSort: true,
+    disambiguatePaths: false,
+    runOnCompile: false,
+    strict: true,
+    only: [],
   }
 };

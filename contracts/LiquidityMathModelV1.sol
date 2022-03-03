@@ -51,9 +51,9 @@ contract LiquidityMathModelV1 is LiquidityMathModelInterface, LiquidityMathModel
                     ),
                     1e18
                 ),
-                arguments.oracle.getUnderlyingPrice(arguments.asset)
+                arguments.assetPrice//arguments.oracle.getUnderlyingPrice(arguments.asset)
             ),
-            getAssetDecimalsMantissa(arguments.asset.getUnderlying())
+            getAssetDecimalsMantissa(arguments.asset.underlying())
         );
 
         uint256 hypotheticalOptimizableValue = div_(
@@ -81,7 +81,7 @@ contract LiquidityMathModelV1 is LiquidityMathModelInterface, LiquidityMathModel
             if(protectionIsAlive){
                 _lockedValue = add_(_lockedValue, arguments.cprotection.getUnderlyingProtectionLockedValue(protectionId));
 
-                uint assetSpotPrice = arguments.oracle.getUnderlyingPrice(arguments.asset);
+                uint assetSpotPrice = arguments.assetPrice;//arguments.oracle.getUnderlyingPrice(arguments.asset);
                 uint protectionStrikePrice = arguments.cprotection.getUnderlyingStrikePrice(protectionId);
 
                 if( assetSpotPrice > protectionStrikePrice) {

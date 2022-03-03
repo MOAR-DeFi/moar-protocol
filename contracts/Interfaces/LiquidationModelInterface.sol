@@ -18,6 +18,7 @@ interface LiquidationModelInterface {
         uint actualRepayAmount;
         address accountForLiquidation;
         uint liquidationIncentiveMantissa;
-
+        uint256 mTokenBorrowedPrice;
+        uint256 mTokenCollateralPrice;
     }
 }

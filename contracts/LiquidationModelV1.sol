@@ -52,12 +52,12 @@ contract LiquidationModelV1 is LiquidationModelInterface, Exponential, Moartroll
     function liquidateCalculateSeizeTokens(LiquidationModelInterface.LiquidateCalculateSeizeUserTokensArgumentsSet memory arguments) public override view returns (uint, uint) {
         /* Read oracle prices for borrowed and collateral markets */
         uint priceBorrowedMantissa = mul_(
-            arguments.oracle.getUnderlyingPrice(MToken(arguments.mTokenBorrowed)),
-            10**uint256(18 - EIP20Interface(MToken(arguments.mTokenBorrowed).getUnderlying()).decimals())
+            arguments.mTokenBorrowedPrice, //arguments.oracle.getUnderlyingPrice(MToken(arguments.mTokenBorrowed)),
+            10**uint256(18 - EIP20Interface(MToken(arguments.mTokenBorrowed).underlying()).decimals())
         );
         uint priceCollateralMantissa = mul_(
-            arguments.oracle.getUnderlyingPrice(MToken(arguments.mTokenCollateral)),
-            10**uint256(18 - EIP20Interface(MToken(arguments.mTokenCollateral).getUnderlying()).decimals())
+            arguments.mTokenCollateralPrice,//arguments.oracle.getUnderlyingPrice(MToken(arguments.mTokenCollateral)),
+            10**uint256(18 - EIP20Interface(MToken(arguments.mTokenCollateral).underlying()).decimals())
         );
         if (priceBorrowedMantissa == 0 || priceCollateralMantissa == 0) {
             return (uint(Error.PRICE_ERROR), 0);

@@ -4,7 +4,7 @@ pragma solidity ^0.6.12;
 import "./MToken.sol";
 import "./Interfaces/MErc20Interface.sol";
 import "./Moartroller.sol";
-import "./AbstractInterestRateModel.sol";
+import "./InterestRateModel/AbstractInterestRateModel.sol";
 import "./Interfaces/EIP20Interface.sol";
 import "./Utils/SafeEIP20.sol";
 
@@ -16,6 +16,8 @@ contract MErc20 is MToken, MErc20Interface {
 
     using SafeEIP20 for EIP20Interface;
 
+    address public merc20Proxy;
+    
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
@@ -26,19 +28,27 @@ contract MErc20 is MToken, MErc20Interface {
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
      */
-    function init(address underlying_,
-                        Moartroller moartroller_,
-                        AbstractInterestRateModel interestRateModel_,
-                        uint initialExchangeRateMantissa_,
-                        string memory name_,
-                        string memory symbol_,
-                        uint8 decimals_) public {
+    function init(
+        address merc20Proxy_,
+        address underlying_,
+        Moartroller moartroller_,
+        AbstractInterestRateModel interestRateModel_,
+        uint initialExchangeRateMantissa_,
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_,
+        address payable admin_
+    ) public {
+        admin = msg.sender;
+        merc20Proxy = merc20Proxy_;
         // MToken initialize does the bulk of the work
         super.init(moartroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
-        EIP20Interface(underlying).totalSupply();
+        //EIP20Interface(underlying).totalSupply();
+
+        admin = admin_;
     }
 
     /*** User Interface ***/
@@ -49,8 +59,9 @@ contract MErc20 is MToken, MErc20Interface {
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function mint(uint mintAmount) external override returns (uint) {
-        (uint err,) = mintInternal(mintAmount);
+    function mint(address minter, uint mintAmount) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        (uint err,) = mintInternal(minter, mintAmount);
         return err;
     }
 
@@ -60,8 +71,13 @@ contract MErc20 is MToken, MErc20Interface {
      * @param redeemTokens The number of mTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeem(uint redeemTokens) external override returns (uint) {
-        return redeemInternal(redeemTokens);
+    function redeem(
+        address redeemer,
+        uint redeemTokens,
+        uint256[] memory accountAssetsPriceMantissa
+    ) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        return redeemInternal(redeemer, redeemTokens, accountAssetsPriceMantissa);
     }
 
     /**
@@ -70,8 +86,13 @@ contract MErc20 is MToken, MErc20Interface {
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemUnderlying(uint redeemAmount) external override returns (uint) {
-        return redeemUnderlyingInternal(redeemAmount);
+    function redeemUnderlying(
+        address redeemer,
+        uint redeemAmount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        return redeemUnderlyingInternal(redeemer, redeemAmount, accountAssetsPriceMantissa);
     }
 
     /**
@@ -79,12 +100,22 @@ contract MErc20 is MToken, MErc20Interface {
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function borrow(uint borrowAmount) external override returns (uint) {
-        return borrowInternal(borrowAmount);
+    function borrow(
+        address borrower,
+        uint borrowAmount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        return borrowInternal(borrower, borrowAmount, accountAssetsPriceMantissa);
     }
 
-    function borrowFor(address payable borrower, uint borrowAmount) external override returns (uint) {
-        return borrowForInternal(borrower, borrowAmount);
+    function borrowFor(
+        address payable borrower, 
+        uint borrowAmount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        return borrowForInternal(borrower, borrowAmount, accountAssetsPriceMantissa);
     }
 
     /**
@@ -92,8 +123,12 @@ contract MErc20 is MToken, MErc20Interface {
      * @param repayAmount The amount to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function repayBorrow(uint repayAmount) external override returns (uint) {
-        (uint err,) = repayBorrowInternal(repayAmount);
+    function repayBorrow(
+        address repayer,
+        uint repayAmount
+    ) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        (uint err,) = repayBorrowInternal(repayer,repayAmount);
         return err;
     }
 
@@ -103,8 +138,13 @@ contract MErc20 is MToken, MErc20Interface {
      * @param repayAmount The amount to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function repayBorrowBehalf(address borrower, uint repayAmount) external override returns (uint) {
-        (uint err,) = repayBorrowBehalfInternal(borrower, repayAmount);
+    function repayBorrowBehalf(
+        address repayer,
+        address borrower, 
+        uint repayAmount
+    ) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        (uint err,) = repayBorrowBehalfInternal(repayer, borrower, repayAmount);
         return err;
     }
 
@@ -116,8 +156,23 @@ contract MErc20 is MToken, MErc20Interface {
      * @param mTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, MToken mTokenCollateral) external override returns (uint) {
-        (uint err,) = liquidateBorrowInternal(borrower, repayAmount, mTokenCollateral);
+    function liquidateBorrow(
+        address liquidator,
+        address borrower,
+        uint repayAmount, 
+        MToken mTokenCollateral,
+        uint256[] calldata accountAssetsPriceMantissa,
+        uint256[] calldata mTokenBorrowedCollateralPrice
+    ) external override returns (uint) {
+        require(msg.sender == merc20Proxy, "-");
+        (uint err,) = liquidateBorrowInternal(
+            liquidator,
+            borrower, 
+            repayAmount, 
+            mTokenCollateral, 
+            accountAssetsPriceMantissa,
+            mTokenBorrowedCollateralPrice
+        );
         return err;
     }
 
@@ -126,7 +181,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @param token The address of the ERC-20 token to sweep
      */
     function sweepToken(EIP20Interface token) override external {
-    	require(address(token) != underlying, "MErc20::sweepToken: can not sweep underlying token");
+    	require(address(token) != underlying, "token!=underlying");
     	uint256 balance = token.balanceOf(address(this));
     	token.safeTransfer(admin, balance);
     }
@@ -168,7 +223,7 @@ contract MErc20 is MToken, MErc20Interface {
 
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = token.balanceOf(address(this));
-        require(balanceAfter >= balanceBefore, "TOKEN_TRANSFER_IN_OVERFLOW");
+        require(balanceAfter >= balanceBefore, "overflow");
         return balanceAfter - balanceBefore;   // underflow already checked above, just subtract
     }
 

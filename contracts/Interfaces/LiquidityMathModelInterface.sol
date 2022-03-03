@@ -13,6 +13,7 @@ interface LiquidityMathModelInterface {
         uint collateralFactorMantissa;
         MProtection cprotection;
         PriceOracle oracle;
+        uint256 assetPrice;
     }
     
     function getMaxOptimizableValue(LiquidityMathArgumentsSet memory _arguments) external view returns (uint);

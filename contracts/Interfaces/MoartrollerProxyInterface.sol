@@ -1,61 +1,51 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "../MToken.sol";
 import "../Utils/ExponentialNoError.sol";
 
-interface MoartrollerInterface {
+interface MoartrollerProxyInterface {
 
-    /**
- * @dev Local vars for avoiding stack-depth limits in calculating account liquidity.
- *  Note that `mTokenBalance` is the number of mTokens the account owns in the market,
- *  whereas `borrowBalance` is the amount of underlying that the account has borrowed.
- */
-    struct AccountLiquidityLocalVars {
-        uint sumCollateral;
-        uint sumBorrowPlusEffects;
-        uint mTokenBalance;
-        uint borrowBalance;
-        uint exchangeRateMantissa;
-        uint oraclePriceMantissa;
-        ExponentialNoError.Exp collateralFactor;
-        ExponentialNoError.Exp exchangeRate;
-        ExponentialNoError.Exp oraclePrice;
-        ExponentialNoError.Exp tokensToDenom;
-        uint256 redeemTokens;
-        address account;
-    }
 
     /*** Assets You Are In ***/
 
     function enterMarkets(
-        address account,
         address[] calldata mTokens
     ) external returns (uint[] memory);
+
     function exitMarket(
-        address account,
-        address mTokenAddress,
-        uint256[] calldata accountAssetsPriceMantissa
+        address mTokenAddress, 
+        address[] calldata mTokenAssets, 
+        uint256[] memory accountAssetsPriceMantissa, 
+        uint256 accountAssetsPriceValidTo, 
+        bytes[] calldata accountAssetsPriceSignatures
     ) external returns (uint);
 
     /*** Policy Hooks ***/
 
     function mintAllowed(address mToken, address minter, uint mintAmount) external returns (uint);
 
-   function redeemAllowed(
+    function redeemAllowed(
         address mToken, 
         address redeemer, 
         uint redeemTokens,
-        uint256[] calldata accountAssetsPriceMantissa
+        address[] calldata mTokenAssets, 
+        uint256[] memory accountAssetsPriceMantissa, 
+        uint256 accountAssetsPriceValidTo, 
+        bytes[] calldata accountAssetsPriceSignatures
     ) external returns (uint);
-    
+
     function redeemVerify(address mToken, address redeemer, uint redeemAmount, uint redeemTokens) external;
 
     function borrowAllowed(
         address mToken, 
         address borrower, 
         uint borrowAmount,
-        uint256[] calldata accountAssetsPriceMantissa
+        address[] calldata mTokenAssets, 
+        uint256[] memory accountAssetsPriceMantissa, 
+        uint256 accountAssetsPriceValidTo, 
+        bytes[] calldata accountAssetsPriceSignatures
     ) external returns (uint);
 
     function repayBorrowAllowed(
@@ -66,12 +56,15 @@ interface MoartrollerInterface {
     ) external returns (uint);
 
     function liquidateBorrowAllowed(
-        address mTokenBorrowed,
+         address mTokenBorrowed,
         address mTokenCollateral,
         address liquidator,
         address borrower,
         uint repayAmount,
-        uint256[] calldata accountAssetsPriceMantissa
+        address[] calldata mTokenAssets, 
+        uint256[] memory accountAssetsPriceMantissa, 
+        uint256 accountAssetsPriceValidTo, 
+        bytes[] calldata accountAssetsPriceSignatures
     ) external returns (uint);
 
     function seizeAllowed(
@@ -85,19 +78,24 @@ interface MoartrollerInterface {
     function transferAllowed(
         address mToken, 
         address src, 
-        address dst, 
+        address dst,
         uint transferTokens,
-        uint256[] calldata priceMantissa
+        address[] calldata mTokenAssets, 
+        uint256[] memory accountAssetsPriceMantissa, 
+        uint256 accountAssetsPriceValidTo, 
+        bytes[] calldata accountAssetsPriceSignatures
     ) external returns (uint);
 
     /*** Liquidity/Liquidation Calculations ***/
 
     function liquidateCalculateSeizeUserTokens(
-        address mTokenBorrowed,
+         address mTokenBorrowed, 
         address mTokenCollateral,
-        uint repayAmount,
+        uint actualRepayAmount, 
         address account,
-        uint256[] calldata mTokenBorrowedCollateralPrice
+        uint256[] calldata mTokenBorrowedCollateralPrice,
+        uint256 priceValidTo,
+        bytes[] calldata mTokenBorrowedCollateralPriceSignature
     ) external view returns (uint, uint);
 
     function getUserLockedAmount(MToken asset, address account) external view returns(uint);

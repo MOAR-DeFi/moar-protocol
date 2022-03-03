@@ -23,6 +23,11 @@ contract SimplePriceOracle is PriceOracle {
         }
     }
 
+    function getUnderlyingPriceSigned(address mToken, uint256 priceMantissa, uint256 validTo, bytes memory signature) public override view returns (uint) {
+        mToken; validTo; signature;
+        return priceMantissa;
+    }
+
     function setUnderlyingPrice(MToken mToken, uint underlyingPriceMantissa) public {
         address asset = address(MErc20(address(mToken)).underlying());
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);

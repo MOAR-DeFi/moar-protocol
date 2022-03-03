@@ -5,8 +5,17 @@ import "./EIP20Interface.sol";
 
 interface MTokenInterface {
     /*** User contract ***/
-    function transfer(address dst, uint256 amount) external returns (bool);
-    function transferFrom(address src, address dst, uint256 amount) external returns (bool);
+    function transfer(
+        address dst, 
+        uint256 amount, 
+        uint256[] memory priceMantissa
+    ) external returns (bool);
+    function transferFrom(
+        address src, 
+        address dst, 
+        uint256 amount,
+        uint256[] memory priceMantissa
+    ) external returns (bool);
     function approve(address spender, uint amount) external returns (bool);
     function allowance(address owner, address spender) external view returns (uint);
     function balanceOf(address owner) external view returns (uint);
@@ -18,7 +27,7 @@ interface MTokenInterface {
     function borrowBalanceCurrent(address account) external returns (uint);
     function getCash() external view returns (uint);
     function seize(address liquidator, address borrower, uint seizeTokens) external returns (uint);
-    function getUnderlying() external view returns(address);
+    //function getUnderlying() external view returns(address);
     function sweepToken(EIP20Interface token) external;
 
 

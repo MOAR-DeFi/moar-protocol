@@ -28,7 +28,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @param symbol_ ERC-20 symbol of this token
      * @param decimals_ ERC-20 decimal precision of this token
      */
-    function init(
+    function initialize (
         address merc20Proxy_,
         address underlying_,
         Moartroller moartroller_,

@@ -5,6 +5,9 @@ pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 // import "hardhat/console.sol";
 
+import "@openzeppelin/contracts/proxy/ProxyAdmin.sol";
+import "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol";
+
 import "./MToken.sol";
 import "./Utils/ErrorReporter.sol";
 import "./Utils/ExponentialNoError.sol";
@@ -21,12 +24,13 @@ import "./Utils/SafeEIP20.sol";
 import "./Interfaces/EIP20Interface.sol";
 import "./Interfaces/LiquidationModelInterface.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @title MOAR's Moartroller Contract
  * @author MOAR
  */
-contract MoartrollerProxy is MoartrollerProxyInterface, Initializable {
+contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUpgradeable {
 
     using SafeEIP20 for EIP20Interface;
 
@@ -40,10 +44,22 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable {
         address _moartroller,
         address _priceOracle
     ) public initializer {
+        __Ownable_init();
         moartroller = Moartroller(_moartroller);
         priceOracle = PriceOracle(_priceOracle);
     }
 
+    /*** Owner functions ***/
+
+    function setMoartroller(address newMoartroller) public onlyOwner {
+        require(newMoartroller != address(0), "invalidNewMoartroller");
+        moartroller = Moartroller(newMoartroller);
+    }
+
+    function setPriceOracle(address newPriceOracle) public onlyOwner {
+        require(newPriceOracle != address(0), "invalidNewPriceOracle");
+        priceOracle = PriceOracle(newPriceOracle);
+    }
     /*** Assets You Are In ***/
 
     /**

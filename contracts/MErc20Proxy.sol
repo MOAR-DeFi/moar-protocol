@@ -27,7 +27,7 @@ contract MErc20Proxy is MErc20ProxyInterface, Initializable{
      * @param _merc20 The address of merc20 asset
      * @param _priceOracle The address of price oracle
      */
-    function init (
+    function initialize (
         address _merc20,
         address _priceOracle
     ) public initializer {

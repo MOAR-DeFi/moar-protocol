@@ -2,8 +2,11 @@
 pragma solidity ^0.6.12;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 import "./Interfaces/Cop/IOCProtectionSeller.sol";
 import "./Interfaces/Cop/IUUNNRegistry.sol";
 import "./Interfaces/MErc20Interface.sol";
@@ -17,7 +20,7 @@ import "./Moartroller.sol";
  * @notice Helps to buy C-OP, deposit it and make a borrow in one transaction
  * @author MOAR
  */
-contract LendingRouter is IERC721Receiver, Ownable{
+contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgradeable {
 
     using SafeEIP20 for EIP20Interface;
 
@@ -31,13 +34,26 @@ contract LendingRouter is IERC721Receiver, Ownable{
     EIP20Interface private baseCurrency;
     Moartroller private moartroller;
 
-    /**
-     * @notice LendingRouter constructor 
-     * @param _protectionToken Address of C-OP contract
-     * @param _cProtectionToken Address of MProtection contract
-     * @param _baseCurrency Address of base token contract used to pay premium
-     */
-    constructor(address _protectionToken, address _cProtectionToken, address _baseCurrency, address _moartroller) public {
+    // /**
+    //  * @notice LendingRouter constructor 
+    //  * @param _protectionToken Address of C-OP contract
+    //  * @param _cProtectionToken Address of MProtection contract
+    //  * @param _baseCurrency Address of base token contract used to pay premium
+    //  */
+    // constructor(address _protectionToken, address _cProtectionToken, address _baseCurrency, address _moartroller) public {
+    //     protectionToken = IUUNNRegistry(_protectionToken);
+    //     cProtectionToken = MProtection(_cProtectionToken);
+    //     baseCurrency = EIP20Interface(_baseCurrency);
+    //     moartroller = Moartroller(_moartroller);
+    // }
+
+    function initialize(
+        address _protectionToken, 
+        address _cProtectionToken, 
+        address _baseCurrency, 
+        address _moartroller
+    ) public initializer {
+        __Ownable_init();
         protectionToken = IUUNNRegistry(_protectionToken);
         cProtectionToken = MProtection(_cProtectionToken);
         baseCurrency = EIP20Interface(_baseCurrency);

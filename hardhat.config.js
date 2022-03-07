@@ -61,9 +61,15 @@ module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      // forking: {
-      //   url: process.env.DEV_TESTNET_URL
-      // },
+      forking: {
+        url: "https://rinkeby.infura.io/v3/"+process.env.INFURA_KEY,
+      },
+      allowUnlimitedContractSize: false,
+      timeout: 999999999,
+      blockGasLimit: 100_000_000,
+      gas: 100_000_000,
+      gasMultiplier: 1,
+      gasPrice: 50_000_000_000, // 50 gwei
       accounts: {
         mnemonic: process.env.WALLET_MNEMONIC
       }
@@ -83,6 +89,13 @@ module.exports = {
     },
     rinkeby: {
       url: "https://rinkeby.infura.io/v3/"+process.env.INFURA_KEY,
+      gas: 5500000,
+      accounts: {
+        mnemonic: process.env.WALLET_MNEMONIC
+      }
+    },
+    mumbai: {
+      url: "https://rpc-mumbai.maticvigil.com",
       gas: 5500000,
       accounts: {
         mnemonic: process.env.WALLET_MNEMONIC

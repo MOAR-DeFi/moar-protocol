@@ -8,7 +8,8 @@ import "./InterestRateModel/AbstractInterestRateModel.sol";
 import "./Interfaces/WETHInterface.sol";
 import "./Interfaces/EIP20Interface.sol";
 import "./Utils/SafeEIP20.sol";
-import "./MWeth.sol";
+import "./Interfaces/MWethInterface.sol";
+
 
 /**
  * @title MOAR's MEther Contract
@@ -19,15 +20,23 @@ contract MWethProxy {
 
     using SafeEIP20 for EIP20Interface;
 
-    MWeth public mweth;
+    address payable public mweth;
     PriceOracle public priceOracle;
+    address public admin;
 
     constructor(
-        address payable mweth_,
-        address priceOracle_
+        // address payable mweth_,
+        address priceOracle_,
+        address admin_
     ) public {
-        mweth = MWeth(mweth_);
+        // mweth = MWeth(mweth_);
         priceOracle = PriceOracle(priceOracle_);
+        admin = admin_;
+    }
+
+    function setMWethImplementation(address payable mweth_) external {
+        require(msg.sender == admin, "caller is not an admin");
+        mweth = mweth_;
     }
 
     /*** User Interface ***/
@@ -37,7 +46,7 @@ contract MWethProxy {
      * @dev Reverts upon any failure
      */
     function mint() external payable {
-        mweth.mint{value: msg.value}();
+        MWethInterface(mweth).mint{value: msg.value}(msg.sender);
     }
 
     /**
@@ -57,7 +66,7 @@ contract MWethProxy {
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
             _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
-        return mweth.redeem(msg.sender, redeemTokens, _accountAssetsPriceMantissa);
+        return MWethInterface(mweth).redeem(msg.sender, redeemTokens, _accountAssetsPriceMantissa);
     }
 
     /**
@@ -77,7 +86,7 @@ contract MWethProxy {
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
             _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
-        return mweth.redeemUnderlying(msg.sender, redeemAmount, _accountAssetsPriceMantissa);
+        return MWethInterface(mweth).redeemUnderlying(msg.sender, redeemAmount, _accountAssetsPriceMantissa);
     }
 
     /**
@@ -96,7 +105,7 @@ contract MWethProxy {
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
             _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
-        return mweth.borrow(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
+        return MWethInterface(mweth).borrow(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
     }
 
     function borrowFor(
@@ -111,7 +120,7 @@ contract MWethProxy {
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
             _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
-        return mweth.borrowFor(borrower, borrowAmount, _accountAssetsPriceMantissa);
+        return MWethInterface(mweth).borrowFor(borrower, borrowAmount, _accountAssetsPriceMantissa);
     }
 
     /**
@@ -119,7 +128,7 @@ contract MWethProxy {
      * @dev Reverts upon any failure
      */
     function repayBorrow() external payable returns(uint){
-        return mweth.repayBorrow{value : msg.value}(msg.sender);
+        return MWethInterface(mweth).repayBorrow{value : msg.value}(msg.sender);
     }
 
     /**
@@ -128,7 +137,7 @@ contract MWethProxy {
      * @param borrower the account with the debt being payed off
      */
     function repayBorrowBehalf(address borrower) external payable returns (uint){
-        return mweth.repayBorrowBehalf{value : msg.value}(msg.sender, borrower);
+        return MWethInterface(mweth).repayBorrowBehalf{value : msg.value}(msg.sender, borrower);
     }
 
     /**
@@ -185,7 +194,7 @@ contract MWethProxy {
         uint256[] memory mTokenPriceBorrowedCollateral
     ) private  returns (uint) {
 
-        return mweth.liquidateBorrow{value : repayAmount}(
+        return MWethInterface(mweth).liquidateBorrow{value : repayAmount}(
             msg.sender,
             borrower, 
             // repayAmount,
@@ -201,7 +210,7 @@ contract MWethProxy {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _addReserves() external payable returns (uint) {
-        return mweth._addReserves{value : msg.value}();
+        return MWethInterface(mweth)._addReserves{value : msg.value}();
         // WETHInterface(underlying).deposit{value : msg.value}();
         // return _addReservesInternal(msg.value);
     }
@@ -219,7 +228,7 @@ contract MWethProxy {
      * @param token The address of the ERC-20 token to sweep
      */
     function sweepToken(EIP20Interface token) external {
-        mweth.sweepToken(token);
+        MWethInterface(mweth).sweepToken(token);
     }
 
 }

@@ -57,15 +57,18 @@ contract MWeth is MToken {
     }
 
 
+
+
     /*** User Interface ***/
 
     /**
      * @notice Sender supplies assets into the market and receives mTokens in exchange
      * @dev Reverts upon any failure
      */
-    function mint() external payable returns(uint){
+    function mint(address minter) external payable returns(uint){
+        require(msg.sender == mwethProxy, "access denied");
         WETHInterface(underlying).deposit{value : msg.value}();
-        (uint err,) = mintInternal(msg.sender,msg.value);
+        (uint err,) = mintInternal(minter,msg.value);
         return err;
     }
 

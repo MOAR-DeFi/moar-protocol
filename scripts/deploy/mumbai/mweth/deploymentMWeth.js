@@ -5,6 +5,7 @@ const BN = hre.ethers.BigNumber;
 const toBN = (num) => BN.from(num);
 
 module.exports = {
+
     deploymentMWeth: async function (
         underlyingAddress,
         priceOracleAddress,
@@ -79,7 +80,12 @@ module.exports = {
         console.log("\nSetting MWeth for MWethProxy");
         await mwethProxy.setMWethImplementation(mwethAddress);
         console.log("Contract MWeth with address: "+ mwethAddress+"  set for MWethProxy");
-
+        
+        await mweth._setReserveFactor(reserveFactor).then(function(instance){
+            console.log("\nTransaction hash: " + instance.hash);
+            console.log("mErc20 "+ merc20.address +" _setReserveFactor " + reserveFactor);
+            return instance
+        });
 
         moartroller = await Moartroller.attach(moartrollerAddress);
         await moartroller._supportMarket(mwethAddress).then(function(instance){
@@ -95,7 +101,6 @@ module.exports = {
             console.log("   newCollateralFactorMantissa: " + collateralFactor);
             return instance
         });
-
 
 
         let addresses = {

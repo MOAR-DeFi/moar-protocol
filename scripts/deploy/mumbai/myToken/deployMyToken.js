@@ -1,4 +1,3 @@
-
 const hre = require("hardhat");
 const BN = hre.ethers.BigNumber;
 
@@ -14,16 +13,10 @@ async function main() {
     
     let name = "WrappedEther"
     let symbol = "WETH"
-    let myToken = await MyToken.connect(deployMaster).deploy(
-        name,
-        symbol
-    );
-    await myToken.deployed().then(function(instance){
-        console.log("Transaction hash: " + instance.deployTransaction.hash);
-        console.log("MyToken deployed: "+ instance.address);
-        return instance
-    })
-
+    let decimals = 18;
+    const { deploymentMyToken } = require('./deploymentMyToken.js');
+    await deploymentMyToken(name, symbol, decimals);
+    
 }
 
 main().catch((error) => {

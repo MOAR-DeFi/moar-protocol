@@ -1,6 +1,7 @@
 const hre = require("hardhat");
 const { ethers, upgrades } = require('hardhat');
 const { deploymentMErc20 } = require('../merc20/deploymentMErc20.js');
+const { deploymentMWeth } = require('../mweth/deploymentMWeth.js');
 
 // const BN = hre.ethers.BigNumber;
 // const toBN = (num) => BN.from(num);
@@ -39,6 +40,7 @@ module.exports = {
         let mlinkAddress
         let mwbtcAddress
         let mwethAddress
+        let mwmaticAddress
 
         let mmoarProxyAddress
         let musdcProxyAddress
@@ -48,6 +50,7 @@ module.exports = {
         let mlinkProxyAddress
         let mwbtcProxyAddress
         let mwethProxyAddress
+        let mwmaticProxyAddress
 
         let liquidationIncentive = '11000000000000000000' // 1.1 * 10**18
         let closeFactor = '500000000000000000' // 0.5 * 10**18
@@ -62,6 +65,7 @@ module.exports = {
         let linkAddress = '0x40EA2e5c5b2104124944282d8db39C5D13ac6770'
         let wbtcAddress = '0x807E84Ad87Cfd0A621a164b6F6F762871bB6c98F'
         let wethAddress = '0x2402d58c435b874a5EEa3deDB4E2B53f08Fd6b20'
+        let wmaticAddress = '0x2402d58c435b874a5EEa3deDB4E2B53f08Fd6b20'
         
         let uUnnAddress = '0x655e549f97eDbfcf693bA9c9Db71F6D2ab6F8fD8' // protection ERC721 address
         let unionRouter = '0x52668E7f627367C8AFd4f4fD7c6529268aA6425A'
@@ -713,8 +717,29 @@ module.exports = {
         });
 
         // ========================================= //
+        // MWMatic (MWeth) deployment
 
-        
+        // let MWMaticAddresses = await deploymentMWeth(
+        //     wmaticAddress,
+        //     priceOracleAddress,
+        //     moartrollerAddress,
+        //     jrmEthAddress,
+        //     '20000000000000000',
+        //     "MWMatic token",
+        //     "MWMatic",
+        //     8,
+        //     ownerAddress,
+        //     '750000000000000000'
+        // ).then(function(instance){
+        //     console.log("mWETHProxy address: " + instance.mwethProxyAddress)
+        //     console.log("mWETH address: " + instance.mwethAddress)
+        //     return instance
+        // });
+
+        // mwmaticAddress = MWMaticAddresses.mwethAddress;
+        // mwmaticProxyAddress = MWMaticAddresses.mwethProxyAddress
+
+        // ========================================= //
 
         let addresses = {
             proxyAdminAddress : proxyAdminAddress,
@@ -755,6 +780,9 @@ module.exports = {
 
             mwethAddress : mwethAddress,
             mwethProxyAddress : mwethProxyAddress
+
+            // mwmaticAddress : mwmaticAddress,
+            // mwmaticProxyAddress : mwmaticProxyAddress
         }
 
         console.log(addresses);
@@ -763,6 +791,10 @@ module.exports = {
         // console.log('REACT_APP_W_ETH='+ wEthAddress)
         // console.log('REACT_APP_MAXIMILLION='+ maximillion.address)
 
+        // console.log('REACT_APP_WMATIC='+ wmaticAddress)
+        // console.log('REACT_APP_MWMATIC='+ mwmaticAddress)
+        // console.log('REACT_APP_MWMATIC_PROXY='+ mwmaticProxyAddress)
+        console.log()
         console.log('REACT_APP_MOAR='+ moarAddress)
         console.log('REACT_APP_M_MOAR='+ mmoarAddress)
         console.log('REACT_APP_M_MOAR_PROXY='+ mmoarProxyAddress)

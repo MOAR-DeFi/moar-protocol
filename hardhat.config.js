@@ -62,7 +62,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://rinkeby.infura.io/v3/"+process.env.INFURA_KEY,
+        url: "https://rpc-mumbai.maticvigil.com",
       },
       allowUnlimitedContractSize: false,
       timeout: 999999999,
@@ -96,7 +96,7 @@ module.exports = {
     },
     mumbai: {
       url: "https://rpc-mumbai.maticvigil.com",
-      gas: 5500000,
+      gas: 2_100_000,
       accounts: {
         mnemonic: process.env.WALLET_MNEMONIC
       }

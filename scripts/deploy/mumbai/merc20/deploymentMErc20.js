@@ -122,15 +122,15 @@ module.exports = {
     
         await merc20._setMaxProtectionComposition(maxProtectionComposition).then(function(instance){
             console.log("\nTransaction hash: " + instance.hash);
-            console.log("mWBTC "+ merc20.address +" _setMaxProtectionComposition " + maxProtectionComposition);
+            console.log("mErc20 "+ merc20.address +" _setMaxProtectionComposition " + maxProtectionComposition);
             return instance
         });
         
-        await merc20._setReserveFactor(reserveFactor).then(function(instance){
-            console.log("\nTransaction hash: " + instance.hash);
-            console.log("mWBTC "+ merc20.address +" _setReserveFactor " + reserveFactor);
-            return instance
-        });
+        // await merc20._setReserveFactor(reserveFactor).then(function(instance){
+        //     console.log("\nTransaction hash: " + instance.hash);
+        //     console.log("mErc20 "+ merc20.address +" _setReserveFactor " + reserveFactor);
+        //     return instance
+        // });
     
         moartroller = await Moartroller.attach(moartrollerAddress);
         await moartroller._supportMarket(merc20Address).then(function(instance){

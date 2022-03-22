@@ -1,4 +1,4 @@
-//const hre = require("hardhat");
+const hre = require("hardhat");
 const { ethers, upgrades } = require('hardhat');
 const { deploymentMErc20 } = require('../merc20/deploymentMErc20.js');
 
@@ -9,6 +9,7 @@ module.exports = {
 
     deploymentLendingPlatform : async function () {
 
+        console.log("Network: " + hre.network.name);
         let owner, user1, user2, user3, user4
         let ownerAddress
         let priceOracle, moartrollerProxy, moartroller, liquidityMathModelV1, cuunn, maximillion, lendingRouter
@@ -30,25 +31,39 @@ module.exports = {
         let cuUNNAddress
         let lendingRouterAddress
 
-        let mwbtcAddress
+        let mmoarAddress
         let musdcAddress
+        let musdtAddress
         let mdaiAddress
         let munnAddress
-        let mmoarAddress
+        let mlinkAddress
+        let mwbtcAddress
         let mwethAddress
+
+        let mmoarProxyAddress
+        let musdcProxyAddress
+        let musdtProxyAddress
+        let mdaiProxyAddress
+        let munnProxyAddress
+        let mlinkProxyAddress
+        let mwbtcProxyAddress
+        let mwethProxyAddress
 
         let liquidationIncentive = '11000000000000000000' // 1.1 * 10**18
         let closeFactor = '500000000000000000' // 0.5 * 10**18
 
         // Rinkeby addresses
 
-        let wbtcAddress = '0x807E84Ad87Cfd0A621a164b6F6F762871bB6c98F'
-        let usdcAddress = '0x8fb197E7d9e37C4f745B4ed657AFe406C494DD60'
-        let daiAddress = '0x781f83e1f7c563F03D0F08a0455971a414D7f6f4'
         let moarAddress = '0x35aA0E792e3749Fc1E883AD8644D731B032b626B'
-        let unnAddress = '0x43fC4C12e2D9a6a6204D8c8376979Ad5c27227A7' //ERC20
-        let uUnnAddress = '0x655e549f97eDbfcf693bA9c9Db71F6D2ab6F8fD8' //ERC721
-        //let wEthAddress = '0xc778417e063141139fce010982780140aa0cd5ab'
+        let usdcAddress = '0x8fb197E7d9e37C4f745B4ed657AFe406C494DD60'
+        let usdtAddress = '0x8bA824e5Ba48aaF0Ac13CFc3471F7C1de552B31b'
+        let daiAddress = '0x781f83e1f7c563F03D0F08a0455971a414D7f6f4'
+        let unnAddress = '0x43fC4C12e2D9a6a6204D8c8376979Ad5c27227A7' // Union ERC20 token address
+        let linkAddress = '0x40EA2e5c5b2104124944282d8db39C5D13ac6770'
+        let wbtcAddress = '0x807E84Ad87Cfd0A621a164b6F6F762871bB6c98F'
+        let wethAddress = '0x2402d58c435b874a5EEa3deDB4E2B53f08Fd6b20'
+        
+        let uUnnAddress = '0x655e549f97eDbfcf693bA9c9Db71F6D2ab6F8fD8' // protection ERC721 address
         let unionRouter = '0x52668E7f627367C8AFd4f4fD7c6529268aA6425A'
 
         let signers = await ethers.getSigners();
@@ -198,13 +213,34 @@ module.exports = {
         // MProxyV1
     
         console.log("\nDeploying MProxyV1")
-        mproxyv1 = await MProxyV1.deploy(ownerAddress)
+        mproxyv1 = await MProxyV1.deploy(/**ownerAddress*/)
         await mproxyv1.deployed().then(function(instance){
             console.log("Transaction hash: " + instance.deployTransaction.hash);
-            console.log("MProxyV1 address: " + instance.address);
+            console.log("MProxyV1 masterCopy address: " + instance.address);
             return instance;
         });
-        mproxyv1Address = mproxyv1.address;
+        let mproxyv1MasterCopyAddress = mproxyv1.address
+        
+        let mproxyv1_proxy = await TransparentUpgradeableProxy.deploy(
+            mproxyv1MasterCopyAddress,
+            proxyAdminAddress,
+            "0x"
+        );
+        await mproxyv1_proxy.deployed().then(function(instance){
+            console.log("Transaction hash: " + instance.deployTransaction.hash);
+            console.log("LendingRouter proxy address: " + instance.address);
+            return instance;
+        });
+        mproxyv1Address =  mproxyv1_proxy.address;
+
+        mproxyv1 = await MProxyV1.attach(mproxyv1Address);
+        await mproxyv1.initialize(ownerAddress).then(function(instance){
+            console.log("\nTransaction hash: " + instance.hash);
+            console.log("MProxyV1 "+ mproxyv1.address + " call initialize with params:")
+            console.log("   _reservesReceiver: " + ownerAddress);
+            return instance
+        });
+
         console.log("MProxyV1 deployed!")
         
         // ========================================= //
@@ -399,35 +435,37 @@ module.exports = {
 
         // MTOKENS 
         // ========================================= //
-        // MErc20Proxy and MErc20 for WBTC    
-        let mwbtcAddresses = await deploymentMErc20(
+        // MErc20 for MOAR
+
+        let mmoarAddresses = await deploymentMErc20(
             proxyAdminAddress,
             priceOracleAddress,
-            wbtcAddress,
+            moarAddress,
             moartrollerAddress,
-            jrmWbtcAddress,
-            '20000000000000000',
-            'mToken WBTC',
-            'mWBTC',
+            jrmUnnAddress,
+            '200000000000000000000000000',
+            'mToken MOAR',
+            'mMOAR',
             8,
             ownerAddress,
-            '500',
-            '200000000000000000',
-            '750000000000000000'
+            '2500',
+            '350000000000000000',
+            '1250000000000000000'
         ).then(function(instance){
-            console.log("mWBTCProxy address: " + instance.merc20ProxyAddress)
-            console.log("mWBTC address: " + instance.merc20Address)
+            console.log("mMOARProxy address: " + instance.merc20ProxyAddress)
+            console.log("mMOAR address: " + instance.merc20Address)
             return instance
         });
 
-        mwbtcAddress = mwbtcAddresses.merc20Address;
+        mmoarAddress = mmoarAddresses.merc20Address;
+        mmoarProxyAddress = mmoarAddresses.merc20ProxyAddress;
 
-        let mwbtcUnderlyingPrice = '550000000000000000000000000000000'
-        await priceOracle.setUnderlyingPrice(mwbtcAddress, mwbtcUnderlyingPrice).then(function(instance){
+        let mmoarUnderlyingPrice = '3000000000000000000'
+        await priceOracle.setUnderlyingPrice(mmoarAddress, mmoarUnderlyingPrice).then(function(instance){
             console.log("\nTransaction hash: " + instance.hash);
             console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
-            console.log("   mToken: " + mwbtcAddress)
-            console.log("   underlyingPrice: " + mwbtcUnderlyingPrice)
+            console.log("   mToken: " + mmoarAddress)
+            console.log("   underlyingPrice: " + mmoarUnderlyingPrice)
             return instance
         });
 
@@ -455,6 +493,7 @@ module.exports = {
         });
 
         musdcAddress = musdcAddresses.merc20Address;
+        musdcProxyAddress = musdcAddresses.merc20ProxyAddress;
 
         let musdcUnderlyingPrice = '1000000000000000000000000000000'
         await priceOracle.setUnderlyingPrice(musdcAddress, musdcUnderlyingPrice).then(function(instance){
@@ -464,7 +503,42 @@ module.exports = {
             console.log("   underlyingPrice: " + musdcUnderlyingPrice)
             return instance
         });
-        
+
+        // ========================================= //
+        // MErc20 for USDT
+
+        let musdtAddresses = await deploymentMErc20(
+            proxyAdminAddress,
+            priceOracleAddress,
+            usdcAddress,
+            moartrollerAddress,
+            jrmStableCoinAddress,
+            '20000000000000000',
+            'mToken USDT',
+            'mUSDT',
+            8,
+            ownerAddress,
+            '10000',
+            '100000000000000000',
+            '850000000000000000'
+        ).then(function(instance){
+            console.log("mUSDTProxy address: " + instance.merc20ProxyAddress)
+            console.log("mUSDT address: " + instance.merc20Address)
+            return instance
+        });
+
+        musdtAddress = musdtAddresses.merc20Address;
+        musdtProxyAddress = musdtAddresses.merc20ProxyAddress;
+
+        let musdtUnderlyingPrice = '1000000000000000000000000000000'
+        await priceOracle.setUnderlyingPrice(musdtAddress, musdtUnderlyingPrice).then(function(instance){
+            console.log("\nTransaction hash: " + instance.hash);
+            console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
+            console.log("   mToken: " + musdtAddress)
+            console.log("   underlyingPrice: " + musdtUnderlyingPrice)
+            return instance
+        });
+
         // ========================================= //
         // MErc20 for DAI
 
@@ -489,6 +563,7 @@ module.exports = {
         });
 
         mdaiAddress = mdaiAddresses.merc20Address;
+        mdaiProxyAddress = mdaiAddresses.merc20ProxyAddress;
 
         let mdaiUnderlyingPrice = '1000000000000000000000000000000'
         await priceOracle.setUnderlyingPrice(mdaiAddress, mdaiUnderlyingPrice).then(function(instance){
@@ -496,40 +571,6 @@ module.exports = {
             console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
             console.log("   mToken: " + mdaiAddress)
             console.log("   underlyingPrice: " + mdaiUnderlyingPrice)
-            return instance
-        });
-
-        // ========================================= //
-        // MErc20 for MOAR
-
-        let mmoarAddresses = await deploymentMErc20(
-            proxyAdminAddress,
-            priceOracleAddress,
-            moarAddress,
-            moartrollerAddress,
-            jrmUnnAddress,
-            '200000000000000000000000000',
-            'mToken MOAR',
-            'mMOAR',
-            8,
-            ownerAddress,
-            '2500',
-            '350000000000000000',
-            '1250000000000000000'
-        ).then(function(instance){
-            console.log("mMOARProxy address: " + instance.merc20ProxyAddress)
-            console.log("mMOAR address: " + instance.merc20Address)
-            return instance
-        });
-
-        mmoarAddress = mmoarAddresses.merc20Address;
-
-        let mmoarUnderlyingPrice = '3000000000000000000'
-        await priceOracle.setUnderlyingPrice(mmoarAddress, mmoarUnderlyingPrice).then(function(instance){
-            console.log("\nTransaction hash: " + instance.hash);
-            console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
-            console.log("   mToken: " + mmoarAddress)
-            console.log("   underlyingPrice: " + mmoarUnderlyingPrice)
             return instance
         });
 
@@ -557,15 +598,123 @@ module.exports = {
         });
 
         munnAddress = munnAddresses.merc20Address;
+        munnProxyAddress = munnAddresses.merc20ProxyAddress;
 
         let munnUnderlyingPrice = '90000000000000000'
-        await priceOracle.setUnderlyingPrice(mmoarAddress, munnUnderlyingPrice).then(function(instance){
+        await priceOracle.setUnderlyingPrice(munnAddress, munnUnderlyingPrice).then(function(instance){
             console.log("\nTransaction hash: " + instance.hash);
             console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
             console.log("   mToken: " + munnAddress)
             console.log("   underlyingPrice: " + munnUnderlyingPrice)
             return instance
         });
+
+        // ========================================= //
+        // MErc20 for LINK
+
+        let mlinkAddresses = await deploymentMErc20(
+            proxyAdminAddress,
+            priceOracleAddress,
+            linkAddress,
+            moartrollerAddress,
+            jrmUnnAddress,
+            '200000000000000000000000000',
+            'mToken LINK',
+            'mLINK',
+            8,
+            ownerAddress,
+            '2500',
+            '350000000000000000',
+            '1000000000000000000'
+        ).then(function(instance){
+            console.log("mLINKProxy address: " + instance.merc20ProxyAddress)
+            console.log("mLINK address: " + instance.merc20Address)
+            return instance
+        });
+
+        mlinkAddress = mlinkAddresses.merc20Address;
+        mlinkProxyAddress = mlinkAddresses.merc20ProxyAddress;
+
+        let mlinkUnderlyingPrice = '90000000000000000'
+        await priceOracle.setUnderlyingPrice(mlinkAddress, mlinkUnderlyingPrice).then(function(instance){
+            console.log("\nTransaction hash: " + instance.hash);
+            console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
+            console.log("   mToken: " + mlinkAddress)
+            console.log("   underlyingPrice: " + mlinkUnderlyingPrice)
+            return instance
+        });
+
+        // ========================================= //
+        // MErc20Proxy and MErc20 for WBTC    
+        let mwbtcAddresses = await deploymentMErc20(
+            proxyAdminAddress,
+            priceOracleAddress,
+            wbtcAddress,
+            moartrollerAddress,
+            jrmWbtcAddress,
+            '20000000000000000',
+            'mToken WBTC',
+            'mWBTC',
+            8,
+            ownerAddress,
+            '500',
+            '200000000000000000',
+            '750000000000000000'
+        ).then(function(instance){
+            console.log("mWBTCProxy address: " + instance.merc20ProxyAddress)
+            console.log("mWBTC address: " + instance.merc20Address)
+            return instance
+        });
+
+        mwbtcAddress = mwbtcAddresses.merc20Address;
+        mwbtcProxyAddress = mwbtcAddresses.merc20ProxyAddress;
+
+        let mwbtcUnderlyingPrice = '550000000000000000000000000000000'
+        await priceOracle.setUnderlyingPrice(mwbtcAddress, mwbtcUnderlyingPrice).then(function(instance){
+            console.log("\nTransaction hash: " + instance.hash);
+            console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
+            console.log("   mToken: " + mwbtcAddress)
+            console.log("   underlyingPrice: " + mwbtcUnderlyingPrice)
+            return instance
+        });
+
+        // ========================================= //
+        // MErc20Proxy and MErc20 for WETH    
+        let mwethAddresses = await deploymentMErc20(
+            proxyAdminAddress,
+            priceOracleAddress,
+            wbtcAddress,
+            moartrollerAddress,
+            jrmWbtcAddress,
+            '20000000000000000',
+            'mToken WETH',
+            'mWETH',
+            8,
+            ownerAddress,
+            '500',
+            '200000000000000000',
+            '750000000000000000'
+        ).then(function(instance){
+            console.log("mWETHProxy address: " + instance.merc20ProxyAddress)
+            console.log("mWETH address: " + instance.merc20Address)
+            return instance
+        });
+
+        mwethAddress = mwethAddresses.merc20Address;
+        mwethProxyAddress = mwethAddresses.merc20ProxyAddress;
+
+        let mwethUnderlyingPrice = '550000000000000000000000000000000'
+        await priceOracle.setUnderlyingPrice(mwethAddress, mwethUnderlyingPrice).then(function(instance){
+            console.log("\nTransaction hash: " + instance.hash);
+            console.log("PriceOracle "+ priceOracle.address +" setUnderlyingPrice with params");
+            console.log("   mToken: " + mwethAddress)
+            console.log("   underlyingPrice: " + mwethUnderlyingPrice)
+            return instance
+        });
+
+        // ========================================= //
+
+        
 
         let addresses = {
             proxyAdminAddress : proxyAdminAddress,
@@ -582,12 +731,30 @@ module.exports = {
             copMappingAddress : copMappingAddress,
             cuUNNAddress : cuUNNAddress,
             lendingRouterAddress : lendingRouterAddress,
-    
-            mwbtcAddress : mwbtcAddress,
+
+            mmoarAddress : mmoarAddress,
+            mmoarProxyAddress : mmoarProxyAddress,
+
             musdcAddress : musdcAddress,
+            musdcProxyAddress : munnProxyAddress,
+
+            musdtAddress : musdtAddress,
+            musdtProxyAddress : musdtProxyAddress,
+
             mdaiAddress : mdaiAddress,
+            mdaiProxyAddress: mdaiProxyAddress,
+    
             munnAddress : munnAddress,
-            mmoarAddress : mmoarAddress
+            munnProxyAddress : munnProxyAddress,
+
+            mlinkAddress : mlinkAddress,
+            mlinkProxyAddress : mlinkProxyAddress,
+
+            mwbtcAddress : mwbtcAddress,
+            mwbtcProxyAddress : mwbtcProxyAddress,
+
+            mwethAddress : mwethAddress,
+            mwethProxyAddress : mwethProxyAddress
         }
 
         console.log(addresses);
@@ -595,20 +762,46 @@ module.exports = {
         // console.log('REACT_APP_M_ETHEREUM='+ meth.address)
         // console.log('REACT_APP_W_ETH='+ wEthAddress)
         // console.log('REACT_APP_MAXIMILLION='+ maximillion.address)
-        console.log('REACT_APP_DAI='+ daiAddress)
-        console.log('REACT_APP_M_DAI='+ mdaiAddress)
+
         console.log('REACT_APP_MOAR='+ moarAddress)
         console.log('REACT_APP_M_MOAR='+ mmoarAddress)
-        console.log('REACT_APP_UNION='+ unnAddress)
-        console.log('REACT_APP_M_UNION='+ munnAddress)
-        console.log('REACT_APP_UUNION='+ uUnnAddress)
-        console.log('REACT_APP_M_UUNION='+ cuUNNAddress)
+        console.log('REACT_APP_M_MOAR_PROXY='+ mmoarProxyAddress)
+        console.log()
         console.log('REACT_APP_USDC='+ usdcAddress)
         console.log('REACT_APP_M_USDC='+ musdcAddress)
+        console.log('REACT_APP_M_USDC_PROXY='+ musdcProxyAddress)
+        console.log()
+        console.log('REACT_APP_USDT='+ usdtAddress)
+        console.log('REACT_APP_M_USDT='+ musdtAddress)
+        console.log('REACT_APP_M_USDT_PROXY='+ musdtProxyAddress)
+        console.log()
+        console.log('REACT_APP_DAI='+ daiAddress)
+        console.log('REACT_APP_M_DAI='+ mdaiAddress)
+        console.log('REACT_APP_M_DAI_PROXY='+ mdaiProxyAddress)
+        console.log()
+        console.log('REACT_APP_UNION='+ unnAddress)
+        console.log('REACT_APP_M_UNION='+ munnAddress)
+        console.log('REACT_APP_M_UNION_PROXY='+ munnProxyAddress)
+        console.log()
+        console.log('REACT_APP_LINK='+ linkAddress)
+        console.log('REACT_APP_M_LINK='+ mlinkAddress)
+        console.log('REACT_APP_M_LINK_PROXY='+ mlinkProxyAddress)
+        console.log()
         console.log('REACT_APP_WBTC='+ wbtcAddress)
         console.log('REACT_APP_M_WBTC='+ mwbtcAddress)
+        console.log('REACT_APP_M_WBTC_PROXY='+ mwbtcProxyAddress)
+        console.log()
+        console.log('REACT_APP_WETH='+ wethAddress)
+        console.log('REACT_APP_M_WETH='+ mwethAddress)
+        console.log('REACT_APP_M_WETH_PROXY='+ mwethProxyAddress)
+        console.log()
         console.log('REACT_APP_MOARTROLLER='+ moartrollerAddress)
+        console.log('REACT_APP_MOARTROLLER_PROXY='+ moartrollerProxyAddress)
+        console.log()
         console.log('REACT_APP_ORACLE='+ priceOracleAddress)
+        console.log()
+        console.log('REACT_APP_UUNION='+ uUnnAddress)
+        console.log('REACT_APP_M_UUNION='+ cuUNNAddress)
         console.log('REACT_APP_UNION_ROUTER='+ unionRouter)
         console.log('REACT_APP_LENDING_ROUTER='+ lendingRouterAddress)
         

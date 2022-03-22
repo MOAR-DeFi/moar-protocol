@@ -13,7 +13,6 @@ import "./Utils/ErrorReporter.sol";
 import "./Utils/ExponentialNoError.sol";
 import "./Interfaces/PriceOracle.sol";
 import "./Interfaces/MoartrollerProxyInterface.sol";
-import "./Interfaces/Versionable.sol";
 import "./Interfaces/MProxyInterface.sol";
 import "./Moartroller.sol";
 import "./Governance/UnionGovernanceToken.sol";
@@ -387,115 +386,6 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
     function getUserLockedAmount(MToken asset, address account) public override view returns(uint) {
         return moartroller.getUserLockedAmount(asset, account);
     }
-
-    // /*** Admin Functions ***/
-
-    // /**
-    //   * @notice Sets a new _accountAssetsPriceMantissa oracle for the moartroller
-    //   * @dev Admin function to set a new _accountAssetsPriceMantissa oracle
-    //   * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-    //   */
-    // function _setPriceOracle(PriceOracle newOracle) public returns (uint) {
-    //     return moartroller._setPriceOracle(newOracle);
-    // }
-
-    // /**
-    //  * @notice Sets a new CProtection that is allowed to use as a collateral optimisation
-    //  * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-    //  */
-    // function _setProtection(address newCProtection) public returns (uint) {
-    //     return moartroller._setProtection(newCProtection);
-    // }
-
-    // /**
-    //   * @notice Sets the closeFactor used when liquidating borrows
-    //   * @dev Admin function to set closeFactor
-    //   * @param newCloseFactorMantissa New close factor, scaled by 1e18
-    //   * @return uint 0=success, otherwise a failure
-    //   */
-    // function _setCloseFactor(uint newCloseFactorMantissa) external returns (uint) {
-    //     return moartroller._setCloseFactor(newCloseFactorMantissa);
-    // }
-
-    // /**
-    //   * @notice Sets the collateralFactor for a market
-    //   * @dev Admin function to set per-market collateralFactor
-    //   * @param mToken The market to set the factor on
-    //   * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
-    //   * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
-    //   */
-    // function _setCollateralFactor(MToken mToken, uint newCollateralFactorMantissa) external returns (uint) {
-    //     return moartroller._setCollateralFactor(mToken, newCollateralFactorMantissa);
-    // }
-
-    // /**
-    //   * @notice Sets liquidationIncentive
-    //   * @dev Admin function to set liquidationIncentive
-    //   * @param newLiquidationIncentiveMantissa New liquidationIncentive scaled by 1e18
-    //   * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
-    //   */
-    // function _setLiquidationIncentive(uint newLiquidationIncentiveMantissa) external returns (uint) {
-    //     return moartroller._setLiquidationIncentive(newLiquidationIncentiveMantissa);
-    // }
-
-    // function _setRewardClaimEnabled(bool status) external returns (uint) {
-    //     return moartroller._setRewardClaimEnabled(status);
-    // }
-
-    // /**
-    //   * @notice Add the market to the markets mapping and set it as listed
-    //   * @dev Admin function to set isListed and add support for the market
-    //   * @param mToken The address of the market (token) to list
-    //   * @return uint 0=success, otherwise a failure. (See enum Error for details)
-    //   */
-    // function _supportMarket(MToken mToken) external returns (uint) {
-    //     return moartroller._supportMarket(mToken);
-    // }
-
-
-    // /**
-    //   * @notice Set the given borrow caps for the given mToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
-    //   * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing.
-    //   * @param mTokens The addresses of the markets (tokens) to change the borrow caps for
-    //   * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
-    //   */
-    // function _setMarketBorrowCaps(MToken[] calldata mTokens, uint[] calldata newBorrowCaps) external {
-    // 	return moartroller._setMarketBorrowCaps(mTokens, newBorrowCaps);
-    // }
-
-    // /**
-    //  * @notice Admin function to change the Borrow Cap Guardian
-    //  * @param newBorrowCapGuardian The address of the new Borrow Cap Guardian
-    //  */
-    // function _setBorrowCapGuardian(address newBorrowCapGuardian) external {
-    //    return moartroller._setBorrowCapGuardian(newBorrowCapGuardian);
-    // }
-
-    // /**
-    //  * @notice Admin function to change the Pause Guardian
-    //  * @param newPauseGuardian The address of the new Pause Guardian
-    //  * @return uint 0=success, otherwise a failure. (See enum Error for details)
-    //  */
-    // function _setPauseGuardian(address newPauseGuardian) public returns (uint) {
-    //     return moartroller._setPauseGuardian(newPauseGuardian);
-    // }
-
-    // function _setMintPaused(MToken mToken, bool state) public returns (bool) {
-    //     return moartroller._setMintPaused(mToken, state);
-    // }
-
-    // function _setBorrowPaused(MToken mToken, bool state) public returns (bool) {
-    //     return moartroller._setBorrowPaused(mToken, state);
-    // }
-
-    // function _setTransferPaused(bool state) public returns (bool) {
-    //     return moartroller._setTransferPaused(state);
-    // }
-
-    // function _setSeizePaused(bool state) public returns (bool) {
-    //     return moartroller._setSeizePaused(state);
-    // }
-
 
     // /*** MOAR Distribution ***/
 

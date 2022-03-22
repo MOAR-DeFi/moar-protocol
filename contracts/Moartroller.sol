@@ -10,7 +10,6 @@ import "./Utils/ErrorReporter.sol";
 import "./Utils/ExponentialNoError.sol";
 import "./Interfaces/PriceOracle.sol";
 import "./Interfaces/MoartrollerInterface.sol";
-import "./Interfaces/Versionable.sol";
 import "./Interfaces/MProxyInterface.sol";
 import "./MoartrollerStorage.sol";
 import "./Governance/UnionGovernanceToken.sol";

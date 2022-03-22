@@ -160,6 +160,68 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
         merc20Token.borrowFor(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
     }
 
+     /**
+     * @notice Allows admin to rescue tokens lost on LendingRouter contract (which shoundn't happen)
+     * @param protectionSeller Address of C-OP Protection Seller version 2 contract
+     * @param merc20Token MToken synthetic of token that should be borrowed
+     * @param borrowAmount Amount of tokens to borrow
+     * @param data Additional data passed to Protection Seller contract
+     * @param signature Signature used to validate data passed to Protection Seller contract
+     */
+     function purchaseProtectionAndMakeBorrowV2(
+        IOCProtectionSeller protectionSeller, 
+        MErc20Interface merc20Token, 
+        uint256 borrowAmount, 
+        uint256[12] memory data, 
+        bytes memory signature,
+        // =====
+        address[] calldata mTokenAssets,
+        uint256[] memory accountAssetsPriceMantissa, 
+        uint256 accountAssetsValidTo,
+        bytes[] calldata accountAssetsPriceSignatures
+    ) public {
+
+        baseCurrency.safeTransferFrom(msg.sender, address(this), data[1]);
+        baseCurrency.safeApprove(address(protectionSeller), data[1]);
+        protectionSeller.createFromData12(data, signature);
+        // uint256 underlyingTokenId = data[0];
+        protectionToken.approve(address(cProtectionToken), /**underlyingTokenId*/ data[0]);
+       
+        _purchaseProtectionAndMakeBorrowV2(
+            merc20Token, 
+            borrowAmount, 
+            data[0], 
+            // =====
+            mTokenAssets, 
+            accountAssetsPriceMantissa, 
+            accountAssetsValidTo,
+            accountAssetsPriceSignatures
+        );
+    }
+
+    function _purchaseProtectionAndMakeBorrowV2(
+        MErc20Interface merc20Token, 
+        uint256 borrowAmount, 
+        uint256 tokenId,
+        // =====
+        address[] calldata mTokenAssets, 
+        uint256[] memory accountAssetsPriceMantissa, 
+        uint256 accountAssetsValidTo,
+        bytes[] calldata accountAssetsPriceSignatures
+    ) private {
+        uint cProtectionId = cProtectionToken.mintFor(tokenId, msg.sender);
+        uint256 mTokenPrice = accountAssetsPriceMantissa[accountAssetsPriceMantissa.length - 1];
+        uint256 mTokenPriceValidTo = accountAssetsValidTo;
+        bytes memory mTokenPriceSignature = accountAssetsPriceSignatures[accountAssetsPriceSignatures.length - 1];
+
+        cProtectionToken.lockProtectionValue(cProtectionId, 0, mTokenPrice, mTokenPriceValidTo, mTokenPriceSignature);
+        uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length - 1);
+        for(uint256 i = 0; i < _accountAssetsPriceMantissa.length - 1; i++){
+            _accountAssetsPriceMantissa[i] = moartroller.oracle().getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], mTokenPriceValidTo, accountAssetsPriceSignatures[i]);
+        }
+        merc20Token.borrowFor(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
+    }
+
     /**
      * @notice Deposits C-OP, mints MProtection token and optimizes it
      * @param underlyingTokenId Id of C-OP token that will be deposited

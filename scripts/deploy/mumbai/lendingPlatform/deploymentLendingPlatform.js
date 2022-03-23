@@ -11,11 +11,14 @@ module.exports = {
     deploymentLendingPlatform : async function () {
 
         console.log("Network: " + hre.network.name);
-        let owner, user1, user2, user3, user4
+        let owner
         let ownerAddress
-        let priceOracle, moartrollerProxy, moartroller, liquidityMathModelV1, cuunn, maximillion, lendingRouter
-        let mdai, mwbtc, musdc, munn, meth
-        let dai, wbtc, usdc, unn, weth
+        let priceOracle
+        let moartrollerProxy
+        let moartroller
+        let liquidityMathModelV1
+        let cuunn
+        let lendingRouter
 
         let proxyAdminAddress 
         let priceOracleAddress
@@ -57,21 +60,22 @@ module.exports = {
 
         // Rinkeby addresses
 
-        let moarAddress = '0x35aA0E792e3749Fc1E883AD8644D731B032b626B'
-        let usdcAddress = '0x8fb197E7d9e37C4f745B4ed657AFe406C494DD60'
-        let usdtAddress = '0x8bA824e5Ba48aaF0Ac13CFc3471F7C1de552B31b'
-        let daiAddress = '0x781f83e1f7c563F03D0F08a0455971a414D7f6f4'
-        let unnAddress = '0x43fC4C12e2D9a6a6204D8c8376979Ad5c27227A7' // Union ERC20 token address
-        let linkAddress = '0x40EA2e5c5b2104124944282d8db39C5D13ac6770'
-        let wbtcAddress = '0x807E84Ad87Cfd0A621a164b6F6F762871bB6c98F'
-        let wethAddress = '0x2402d58c435b874a5EEa3deDB4E2B53f08Fd6b20'
-        let wmaticAddress = '0x2402d58c435b874a5EEa3deDB4E2B53f08Fd6b20'
+        let moarAddress = '0xe171bab47F29D3E083c85815e83489c0EcA0F506'
+        let usdcAddress = '0xBcbC9F8404b1993F11b1f64Fcba9F486a7d36A91'
+        let usdtAddress = '0xc87b137FCCCe47C9Af64EA730543843965f5856F'
+        let daiAddress = '0x69d4e0F24567C2FED7F8422C1de9e70d84553Df3'
+        let unnAddress = '0x49211BfCaE6e6E15fA92599F25D611B670dF7825' // Union ERC20 token address
+        let linkAddress = '0x6588a9A3A1f2BeEAa79D88E46Cb8E2D7E041050D'
+        let wbtcAddress = '0x79BaA6466413D11996E298E2e92Fe325EC0c7936'
+        let wethAddress = '0x004e3E2EA6DDF729090C1aB127c0e8E2DB40c16d'
+        let wmaticAddress = '0xd9be1D078074e233392838124EEB6E593516A82f'
         
-        let uUnnAddress = '0x655e549f97eDbfcf693bA9c9Db71F6D2ab6F8fD8' // protection ERC721 address
-        let unionRouter = '0x52668E7f627367C8AFd4f4fD7c6529268aA6425A'
+        let uUnnAddress = '0xDaCa43f22e073E4e0f5C5ffF470A455ab88c41c2' // protection ERC721 address
+        let unionRouter = '0xC06D2AA783CB1d83c148D7aA615398dC05AfE216' // union router
 
-        let signers = await ethers.getSigners();
-        ownerAddress = signers[0].address;
+        let signers = await ethers.getSigners()
+        owner = signers[0]
+        ownerAddress = owner.address
 
         // PLATFORM CONTRACTS ABI
 

@@ -691,7 +691,7 @@ module.exports = {
         let mwethAddresses = await deploymentMErc20(
             proxyAdminAddress,
             priceOracleAddress,
-            wbtcAddress,
+            wethAddress,
             moartrollerAddress,
             jrmWbtcAddress,
             '20000000000000000',

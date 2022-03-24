@@ -518,7 +518,7 @@ module.exports = {
         let musdtAddresses = await deploymentMErc20(
             proxyAdminAddress,
             priceOracleAddress,
-            usdcAddress,
+            usdtAddress,
             moartrollerAddress,
             jrmStableCoinAddress,
             '20000000000000000',

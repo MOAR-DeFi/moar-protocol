@@ -60,7 +60,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function mint(address minter, uint mintAmount) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(msg.sender == merc20Proxy, "1");
         (uint err,) = mintInternal(minter, mintAmount);
         return err;
     }
@@ -76,7 +76,7 @@ contract MErc20 is MToken, MErc20Interface {
         uint redeemTokens,
         uint256[] memory accountAssetsPriceMantissa
     ) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(msg.sender == merc20Proxy, "1");
         return redeemInternal(redeemer, redeemTokens, accountAssetsPriceMantissa);
     }
 
@@ -91,7 +91,7 @@ contract MErc20 is MToken, MErc20Interface {
         uint redeemAmount,
         uint256[] memory accountAssetsPriceMantissa
     ) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(msg.sender == merc20Proxy, "1");
         return redeemUnderlyingInternal(redeemer, redeemAmount, accountAssetsPriceMantissa);
     }
 
@@ -105,7 +105,7 @@ contract MErc20 is MToken, MErc20Interface {
         uint borrowAmount,
         uint256[] memory accountAssetsPriceMantissa
     ) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(msg.sender == merc20Proxy, "1");
         return borrowInternal(borrower, borrowAmount, accountAssetsPriceMantissa);
     }
 
@@ -114,7 +114,8 @@ contract MErc20 is MToken, MErc20Interface {
         uint borrowAmount,
         uint256[] memory accountAssetsPriceMantissa
     ) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(moartroller.privilegedAddresses(msg.sender) == 1, "0");
+        //require(msg.sender == merc20Proxy, "-");
         return borrowForInternal(borrower, borrowAmount, accountAssetsPriceMantissa);
     }
 
@@ -127,7 +128,7 @@ contract MErc20 is MToken, MErc20Interface {
         address repayer,
         uint repayAmount
     ) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(msg.sender == merc20Proxy, "1");
         (uint err,) = repayBorrowInternal(repayer,repayAmount);
         return err;
     }
@@ -143,7 +144,7 @@ contract MErc20 is MToken, MErc20Interface {
         address borrower, 
         uint repayAmount
     ) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(msg.sender == merc20Proxy, "1");
         (uint err,) = repayBorrowBehalfInternal(repayer, borrower, repayAmount);
         return err;
     }
@@ -164,7 +165,7 @@ contract MErc20 is MToken, MErc20Interface {
         uint256[] calldata accountAssetsPriceMantissa,
         uint256[] calldata mTokenBorrowedCollateralPrice
     ) external override returns (uint) {
-        require(msg.sender == merc20Proxy, "-");
+        require(msg.sender == merc20Proxy, "1");
         (uint err,) = liquidateBorrowInternal(
             liquidator,
             borrower, 
@@ -181,7 +182,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @param token The address of the ERC-20 token to sweep
      */
     function sweepToken(EIP20Interface token) override external {
-    	require(address(token) != underlying, "token!=underlying");
+    	require(address(token) != underlying, "2");
     	uint256 balance = token.balanceOf(address(this));
     	token.safeTransfer(admin, balance);
     }
@@ -223,7 +224,7 @@ contract MErc20 is MToken, MErc20Interface {
 
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = token.balanceOf(address(this));
-        require(balanceAfter >= balanceBefore, "overflow");
+        require(balanceAfter >= balanceBefore, "3");
         return balanceAfter - balanceBefore;   // underflow already checked above, just subtract
     }
 

@@ -792,7 +792,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         uint redeemAmountIn,
         uint256[] memory accountAssetsPriceMantissa
     ) internal returns (uint) {
-        require(redeemTokensIn == 0 || redeemAmountIn == 0, "redeemFreshMissingZero");
+        require(redeemTokensIn == 0 || redeemAmountIn == 0, "4");
 
         RedeemLocalVars memory vars;
 
@@ -919,7 +919,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         uint borrowAmount,
         uint256[] memory accountAssetsPriceMantissa
     ) internal nonReentrant returns (uint) {
-        require(moartroller.privilegedAddresses(msg.sender) == 1, "permissionMiss");
+        require(moartroller.privilegedAddresses(msg.sender) == 1, "5");
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
@@ -1085,7 +1085,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         /* If repayAmount == -1, repayAmount = accountBorrows */
         /* If the borrow is repaid by another user -1 cannot be used to prevent borrow front-running */
         if (repayAmount == uint(-1)) {
-            require(tx.origin == borrower, "specifyPreciseAmt");
+            require(tx.origin == borrower, "6");
             vars.repayAmount = vars.accountBorrows;
         } else {
             vars.repayAmount = repayAmount;
@@ -1110,10 +1110,10 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
          *  totalBorrowsNew = totalBorrows - actualRepayAmount
          */
         (vars.mathErr, vars.accountBorrowsNew) = subUInt(vars.accountBorrows, vars.actualRepayAmount);
-        require(vars.mathErr == MathError.NO_ERROR, "BorrowBalanceCalcFail");
+        require(vars.mathErr == MathError.NO_ERROR, "7");
 
         (vars.mathErr, vars.totalBorrowsNew) = subUInt(totalBorrows, vars.actualRepayAmount);
-        require(vars.mathErr == MathError.NO_ERROR, "TotalBalanceCalcFail");
+        require(vars.mathErr == MathError.NO_ERROR, "8");
 
         /* We write the previously calculated values into storage */
         accountBorrows[borrower].principal = vars.accountBorrowsNew;
@@ -1254,7 +1254,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
             vars.borrower,
             mTokenBorrowedCollateralPrice
         );
-        require(amountSeizeError == uint(Error.NO_ERROR), "calculateAmtSeizeFailed");
+        require(amountSeizeError == uint(Error.NO_ERROR), "9");
 
         /* Revert if borrower collateral token balance < seizeTokens */
         require(vars.mTokenCollateral.balanceOf(vars.borrower) >= seizeTokens, "tooMuch");

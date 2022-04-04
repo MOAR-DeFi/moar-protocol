@@ -154,8 +154,8 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
 
         cProtectionToken.lockProtectionValue(cProtectionId, 0, mTokenPrice, mTokenPriceValidTo, mTokenPriceSignature);
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length - 1);
-        for(uint256 i = 0; i < _accountAssetsPriceMantissa.length - 1; i++){
-            _accountAssetsPriceMantissa[i] = moartroller.oracle().getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], mTokenPriceValidTo, accountAssetsPriceSignatures[i]);
+        for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
+            _accountAssetsPriceMantissa[i] = moartroller.oracle().getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsValidTo, accountAssetsPriceSignatures[i]);
         }
         merc20Token.borrowFor(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
     }
@@ -216,8 +216,8 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
 
         cProtectionToken.lockProtectionValue(cProtectionId, 0, mTokenPrice, mTokenPriceValidTo, mTokenPriceSignature);
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length - 1);
-        for(uint256 i = 0; i < _accountAssetsPriceMantissa.length - 1; i++){
-            _accountAssetsPriceMantissa[i] = moartroller.oracle().getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], mTokenPriceValidTo, accountAssetsPriceSignatures[i]);
+        for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
+            _accountAssetsPriceMantissa[i] = moartroller.oracle().getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsValidTo, accountAssetsPriceSignatures[i]);
         }
         merc20Token.borrowFor(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
     }

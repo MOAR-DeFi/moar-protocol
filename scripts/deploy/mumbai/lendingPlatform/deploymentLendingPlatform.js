@@ -236,7 +236,7 @@ module.exports = {
         );
         await mproxyv1_proxy.deployed().then(function(instance){
             console.log("Transaction hash: " + instance.deployTransaction.hash);
-            console.log("LendingRouter proxy address: " + instance.address);
+            console.log("MProxyV1 proxy address: " + instance.address);
             return instance;
         });
         mproxyv1Address =  mproxyv1_proxy.address;

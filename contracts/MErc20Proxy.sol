@@ -20,19 +20,16 @@ contract MErc20Proxy is MErc20ProxyInterface, Initializable{
     using SafeEIP20 for EIP20Interface;
 
     MErc20 public merc20;
-    PriceOracle public priceOracle;
 
     /**
      * @notice 
      * @param _merc20 The address of merc20 asset
-     * @param _priceOracle The address of price oracle
+    
      */
     function initialize (
-        address _merc20,
-        address _priceOracle
+        address _merc20
     ) public initializer {
         merc20 = MErc20(_merc20);
-        priceOracle = PriceOracle(_priceOracle);  
     }
 
     /*** User Interface ***/
@@ -62,7 +59,7 @@ contract MErc20Proxy is MErc20ProxyInterface, Initializable{
     ) external override returns (uint) {
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length);
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
-            _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
+            _accountAssetsPriceMantissa[i] = PriceOracle(Moartroller(merc20.moartroller()).oracle()).getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
         return merc20.redeem(msg.sender, redeemTokens, _accountAssetsPriceMantissa);
     }
@@ -82,7 +79,7 @@ contract MErc20Proxy is MErc20ProxyInterface, Initializable{
     ) external override returns (uint) {
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length);
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
-            _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
+            _accountAssetsPriceMantissa[i] = PriceOracle(Moartroller(merc20.moartroller()).oracle()).getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
         return merc20.redeemUnderlying(msg.sender, redeemAmount, _accountAssetsPriceMantissa);
     }
@@ -101,7 +98,7 @@ contract MErc20Proxy is MErc20ProxyInterface, Initializable{
     ) external override returns (uint) {
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length);
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
-            _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
+            _accountAssetsPriceMantissa[i] = PriceOracle(Moartroller(merc20.moartroller()).oracle()).getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
         return merc20.borrow(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
     }
@@ -116,7 +113,7 @@ contract MErc20Proxy is MErc20ProxyInterface, Initializable{
     ) external override returns (uint) {
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length);
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
-            _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
+            _accountAssetsPriceMantissa[i] = PriceOracle(Moartroller(merc20.moartroller()).oracle()).getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
         return merc20.borrowFor(borrower, borrowAmount, _accountAssetsPriceMantissa);
     }
@@ -160,12 +157,12 @@ contract MErc20Proxy is MErc20ProxyInterface, Initializable{
     ) external override returns (uint) {
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length-2);    
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length - 2; i++){
-            _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
+            _accountAssetsPriceMantissa[i] = PriceOracle(Moartroller(merc20.moartroller()).oracle()).getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
         }
         uint256[] memory _mTokenPriceBorrowedCollateral = new uint256[](2);
         uint256 length = mTokenAssets.length;
-        _mTokenPriceBorrowedCollateral[0] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[length - 2], accountAssetsPriceMantissa[length - 2], accountAssetsPriceValidTo, accountAssetsPriceSignatures[length - 2]);
-        _mTokenPriceBorrowedCollateral[1] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[length - 1], accountAssetsPriceMantissa[length - 1], accountAssetsPriceValidTo, accountAssetsPriceSignatures[length - 1]);
+        _mTokenPriceBorrowedCollateral[0] = PriceOracle(Moartroller(merc20.moartroller()).oracle()).getUnderlyingPriceSigned(mTokenAssets[length - 2], accountAssetsPriceMantissa[length - 2], accountAssetsPriceValidTo, accountAssetsPriceSignatures[length - 2]);
+        _mTokenPriceBorrowedCollateral[1] = PriceOracle(Moartroller(merc20.moartroller()).oracle()).getUnderlyingPriceSigned(mTokenAssets[length - 1], accountAssetsPriceMantissa[length - 1], accountAssetsPriceValidTo, accountAssetsPriceSignatures[length - 1]);
         
         return _liquidateBorrow(
             borrower, 

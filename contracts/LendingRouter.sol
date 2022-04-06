@@ -47,6 +47,12 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
     //     moartroller = Moartroller(_moartroller);
     // }
 
+    /**
+     * @param _protectionToken The address of the C-OP contract
+     * @param _cProtectionToken The address of the MProtection contract
+     * @param _baseCurrency The address of the base token contract
+     * @param _moartroller The address of the Moartroller contract
+     */
     function initialize(
         address _protectionToken, 
         address _cProtectionToken, 
@@ -105,6 +111,10 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
      * param deadline Expiration time of C-OP passed to Protection Seller contract
      * @param data Additional data passed to Protection Seller contract
      * @param signature Signature used to validate data passed to Protection Seller contract
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      */
      function purchaseProtectionAndMakeBorrow(
         IOCProtectionSeller protectionSeller, 
@@ -137,6 +147,22 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
         );
     }
 
+    /**
+     * @notice Allows admin to rescue tokens lost on LendingRouter contract (which shoundn't happen)
+
+     * @param merc20Token MToken synthetic of token that should be borrowed
+     * @param borrowAmount Amount of tokens to borrow
+     * param pool Address of pool passed to Protection Seller contract
+     * param validTo Lifetime period passed to Protection Seller contract
+     * param amount Amount of tokens that will be covered by C-OP 
+     * param strike Strike price passed to C-OP Protection Seller contract
+     * param deadline Expiration time of C-OP passed to Protection Seller contract
+     * @param tokenId Additional data about passed to Protection Seller contract
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
+     */
     function _purchaseProtectionAndMakeBorrow(
         MErc20Interface merc20Token, 
         uint256 borrowAmount, 
@@ -167,6 +193,10 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
      * @param borrowAmount Amount of tokens to borrow
      * @param data Additional data passed to Protection Seller contract
      * @param signature Signature used to validate data passed to Protection Seller contract
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      */
      function purchaseProtectionAndMakeBorrowV2(
         IOCProtectionSeller protectionSeller, 
@@ -199,6 +229,17 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
         );
     }
 
+    /**
+     * @notice Allows admin to rescue tokens lost on LendingRouter contract (which shoundn't happen)
+     * @param merc20Token MToken synthetic of token that should be borrowed
+     * @param borrowAmount Amount of tokens to borrow
+     * @param tokenId Additional data passed to Protection Seller contract
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
+     */
+
     function _purchaseProtectionAndMakeBorrowV2(
         MErc20Interface merc20Token, 
         uint256 borrowAmount, 
@@ -225,6 +266,9 @@ contract LendingRouter is Initializable, OwnableUpgradeable, IERC721ReceiverUpgr
     /**
      * @notice Deposits C-OP, mints MProtection token and optimizes it
      * @param underlyingTokenId Id of C-OP token that will be deposited
+     * @param mTokenPrice - price of MToken. The prices scaled by 10**18
+     * @param validToPrice - the timestamp in seconds of price validity
+     * @param priceSignature - ECDSA signature of "mTokenPrice" price 
      */
     function depositProtectionAndOptimize(
         uint256 underlyingTokenId,

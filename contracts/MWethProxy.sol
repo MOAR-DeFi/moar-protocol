@@ -20,10 +20,20 @@ contract MWethProxy {
 
     using SafeEIP20 for EIP20Interface;
 
+    /// @notice address of MWeth contract 
     address payable public mweth;
+
+    /// @notice PriceOracle contract
     PriceOracle public priceOracle;
+
+    /// @notice contract admin address
     address public admin;
 
+    /**
+     * @notice Construct a new MWethProxy contract for MEther money market
+     * @param priceOracle_ address of PriceOracle contract
+     * @param admin_ contract admin address
+     */
     constructor(
         // address payable mweth_,
         address priceOracle_,
@@ -34,6 +44,10 @@ contract MWethProxy {
         admin = admin_;
     }
 
+    /**
+     * @notice Sets the MWeth contract implementation for MWethProxy contract
+     * @param mweth_ address of MWeth contract
+     */
     function setMWethImplementation(address payable mweth_) external {
         require(msg.sender == admin, "caller is not an admin");
         mweth = mweth_;
@@ -53,6 +67,10 @@ contract MWethProxy {
      * @notice Sender redeems mTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemTokens The number of mTokens to redeem into underlying
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(
@@ -73,6 +91,10 @@ contract MWethProxy {
      * @notice Sender redeems mTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlying(
@@ -92,6 +114,10 @@ contract MWethProxy {
     /**
       * @notice Sender borrows assets from the protocol to their own address
       * @param borrowAmount The amount of the underlying asset to borrow
+      * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+      * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+      * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function borrow(
@@ -108,6 +134,16 @@ contract MWethProxy {
         return MWethInterface(mweth).borrow(msg.sender, borrowAmount, _accountAssetsPriceMantissa);
     }
 
+    /**
+      * @notice Sender borrows assets from the protocol to somebodies address
+      * @param borrower The address of assets receiver 
+      * @param borrowAmount The amount of the underlying asset to borrow
+      * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+      * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+      * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
     function borrowFor(
         address payable borrower, 
         uint borrowAmount,
@@ -146,6 +182,10 @@ contract MWethProxy {
      * @dev Reverts upon any failure
      * @param borrower The borrower of this mToken to be liquidated
      * @param mTokenCollateral The market in which to seize collateral from the borrower
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      */
     function liquidateBorrow(
         address borrower, 
@@ -185,6 +225,17 @@ contract MWethProxy {
         // );
     }
 
+
+    /**
+     * @notice The sender liquidates the borrowers collateral.
+     *  The collateral seized is transferred to the liquidator.
+     * @param borrower The borrower of this mToken to be liquidated
+     * @param repayAmount The amount of the underlying borrowed asset to repay
+     * @param mTokenCollateral The market in which to seize collateral from the borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+     * @param mTokenPriceBorrowedCollateral  - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
     function _liquidateBorrow(
 
         address borrower, 

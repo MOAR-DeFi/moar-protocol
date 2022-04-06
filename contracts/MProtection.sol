@@ -46,11 +46,20 @@ contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoErro
     event MaturityWindowUpdated(uint newMaturityWindow);
 
     Counters.Counter private _tokenIds;
+    /// @notice The address of data mapper for C-OP
     address private _copMappingAddress;
+
+    /// @notice The address of moartroller contract
     address private _moartrollerAddress;
+
+    /// @notice The mapping of MProtection Tokens
     mapping (uint256 => uint256) private _underlyingProtectionTokensMapping;
+
+    /// @notice The mapping of locked token amount 
     mapping (uint256 => uint256) private _underlyingProtectionLockedValue;
+
     mapping (address => mapping (address => EnumerableSet.UintSet)) private _protectionCurrencyMapping;
+
     uint256 public _maturityWindow;
 
     struct ProtectionMappedData{

@@ -105,6 +105,11 @@ contract MultiFeeDistribution is Initializable, ReentrancyGuardUpgradeable, Owna
     //     rewardData[_stakingToken].lastUpdateTime = block.timestamp;
     // }
 
+    /**
+     * @param _stakingToken address of certain token to stake
+     * @param _minters the array of minters addresses
+     * @param _penalty amount of penalty
+     */
     function initialize(
         address _stakingToken,
         address[] memory _minters,
@@ -127,7 +132,11 @@ contract MultiFeeDistribution is Initializable, ReentrancyGuardUpgradeable, Owna
 
     /* ========== ADMIN CONFIGURATION ========== */
 
-    // Add a new reward token to be distributed to stakers
+    /**
+     * @notice Add a new reward token to be distributed to stakers
+     * @param _rewardsToken the address of new reward Token
+     * @param _distributor address of approved reward distributor
+     */
     function addReward(
         address _rewardsToken,
         address _distributor
@@ -164,6 +173,7 @@ contract MultiFeeDistribution is Initializable, ReentrancyGuardUpgradeable, Owna
                         rewardData[_rewardsToken].rewardRate).mul(1e18).div(_supply)
             );
     }
+
 
     function _earned(
         address _user,

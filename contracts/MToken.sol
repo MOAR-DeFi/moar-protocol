@@ -245,6 +245,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param dst The address of the destination account
      * @param amount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      */
     function transfer(
         address dst, 
@@ -259,6 +260,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param src The address of the source account
      * @param dst The address of the destination account
      * @param amount The number of tokens to transfer
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return Whether or not the transfer succeeded
      */
     function transferFrom(
@@ -732,6 +735,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @notice Sender redeems mTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemTokens The number of mTokens to redeem into underlying
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemInternal(
@@ -752,6 +757,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @notice Sender redeems mTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to receive from redeeming mTokens
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlyingInternal(
@@ -784,6 +791,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param redeemer The address of the account which is redeeming the tokens
      * @param redeemTokensIn The number of mTokens to redeem into underlying (only one of redeemTokensIn or redeemAmountIn may be non-zero)
      * @param redeemAmountIn The number of underlying tokens to receive from redeeming mTokens (only one of redeemTokensIn or redeemAmountIn may be non-zero)
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemFresh(
@@ -899,6 +908,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
       * @notice Sender borrows assets from the protocol to their own address
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
       */
     function borrowInternal(
         address borrower,
@@ -913,6 +924,15 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         // borrowFresh emits borrow-specific logs on errors, so we don't need to
         return borrowFresh(payable(borrower), borrowAmount, accountAssetsPriceMantissa);
     }
+
+    /**
+      * @notice Sender borrows assets from the protocol to somebodies address
+      * @param borrower The address of assets receiver 
+      * @param borrowAmount The amount of the underlying asset to borrow
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
+      */
 
     function borrowForInternal(
         address payable borrower, 
@@ -938,6 +958,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
     /**
       * @notice Users borrow assets from the protocol to their own address
+      * @param borrower The address of assets receiver 
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
@@ -1136,6 +1157,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param borrower The borrower of this mToken to be liquidated
      * @param mTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+     * @param mTokenBorrowedCollateralPrice - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
     function liquidateBorrowInternal(
@@ -1182,6 +1205,8 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param liquidator The address repaying the borrow and seizing collateral
      * @param mTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+     * @param mTokenBorrowedCollateralPrice  - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
     function liquidateBorrowFresh(

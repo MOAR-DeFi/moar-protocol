@@ -197,6 +197,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @dev Sender must not have an outstanding borrow balance in the asset,
      *  or be providing necessary collateral for an outstanding borrow.
      * @param mTokenAddress The address of the asset to be removed
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return Whether or not the account successfully exited the market
      */
     function exitMarket(
@@ -290,6 +291,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param mToken The market to verify the redeem against
      * @param redeemer The account which would redeem the tokens
      * @param redeemTokens The number of mTokens to exchange for the underlying asset in the market
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function redeemAllowed(
@@ -312,6 +314,14 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         return uint(Error.NO_ERROR);
     }
 
+    /**
+     * @notice Checks if the account should be allowed to redeem tokens in the given market
+     * @param mToken The market to verify the redeem against
+     * @param redeemer The account which would redeem the tokens
+     * @param redeemTokens The number of mTokens to exchange for the underlying asset in the market
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+     * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
+     */
     function redeemAllowedInternal(
         address mToken, 
         address redeemer, 
@@ -362,6 +372,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param mToken The market to verify the borrow against
      * @param borrower The account which would borrow the asset
      * @param borrowAmount The amount of underlying the account would borrow
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return 0 if the borrow is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function borrowAllowed(
@@ -462,6 +473,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param repayAmount The amount of underlying being repaid
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      */
     function liquidateBorrowAllowed(
         address mTokenBorrowed,
@@ -547,6 +559,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
      * @param transferTokens The number of mTokens to transfer
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return 0 if the transfer is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function transferAllowed(
@@ -579,6 +592,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
 
     /**
      * @notice Determine the current account liquidity wrt collateral requirements
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return (possible error code (semi-opaque),
                 account liquidity in excess of collateral requirements,
      *          account shortfall below collateral requirements)
@@ -612,6 +626,7 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return (possible error code (semi-opaque),
                 hypothetical account liquidity in excess of collateral requirements,
      *          hypothetical account shortfall below collateral requirements)
@@ -765,6 +780,16 @@ contract Moartroller is MoartrollerV6Storage, MoartrollerInterface, MoartrollerE
         );
     }
 
+    /**
+     * @notice Calculate number of tokens of collateral asset of the given user to seize given an underlying amount
+         * this function takes amount of collateral asset that is locked under protection.
+     * @param mTokenBorrowed Asset which was borrowed by the borrower
+     * @param mTokenCollateral Asset which was used as collateral and will be seized
+     * @param actualRepayAmount The amount of underlying being repaid
+     * @param account The account to determine liquidity for
+     * @param mTokenBorrowedCollateralPrice  - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
+     * @return (possible errorCode | number of mTokenCollateral tokens to be seized in a liquidation)
+     */
     function liquidateCalculateSeizeUserTokens(
         address mTokenBorrowed, 
         address mTokenCollateral, 

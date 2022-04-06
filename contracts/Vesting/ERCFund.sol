@@ -27,12 +27,23 @@ contract ERCFund is Initializable, OwnableUpgradeable {
     // address public defaultConversion = 0x3813a8Ba69371e6DF3A89b78bf18fC72Dd5B43c5; //USDC address
     // address public feeDistributor;
 
+    /// @notice address of WETH contract
     address public weth;
+
+    /// @notice address of current router contract
     address public currentRouter;
+
+    /// @notice address of default conversion contract
     address public defaultConversion;
+
+    /// @notice address of fee distributor contract
     address public feeDistributor;
 
+
+    /// @notice fee sharing enable indicator
     bool public feeSharingEnabled = false;
+
+
     uint256 public fee = 200;
     uint256 public feeMAX = 10000;
 
@@ -45,6 +56,13 @@ contract ERCFund is Initializable, OwnableUpgradeable {
     //     feeDistributor = distributor;
     // }
 
+    /**
+     * @notice Initializer of ERCFund contruct
+     * @param _weth address of WETH contract
+     * @param _currentRouter address of UniswapRouterV2 contract
+     * @param _defaultConversion of default conversion contract
+     * @param _feeDistributor of fee distributor contract
+     */
     function initialize(
         address _weth,
         address _currentRouter,
@@ -58,6 +76,10 @@ contract ERCFund is Initializable, OwnableUpgradeable {
         feeDistributor = _feeDistributor;
     }
 
+    /**
+     * @notice converts definite amount of token on Uniswap and feeDistributor notifies reward amount
+     * @param token address of certain token
+     */
     function convertAndNotify(address token) public {
         uint256 balance = IERC20Upgradeable(token).balanceOf(address(this));
         if (balance > 0) {
@@ -67,6 +89,10 @@ contract ERCFund is Initializable, OwnableUpgradeable {
         emit Notified(token);
     }
 
+    /**
+     * @notice feeDistributor notifies reward amount
+     * @param token address of certain token
+     */
     function notifyFeeDistribution(address token) public {
         uint256 balance = IERC20Upgradeable(token).balanceOf(address(this));
 
@@ -89,16 +115,26 @@ contract ERCFund is Initializable, OwnableUpgradeable {
 
     /* ========== VIEW FUNCTIONS ========== */
 
+    /**
+     * @return feeSharingEnabled indicator enabled or not
+     */
     function feeShareEnabled() external view returns (bool) {
         return feeSharingEnabled;
     }
     
+    /**
+     * @return fee amount
+     */
     function getFee() external view returns (uint256) {
         return fee;
     }
 
     /* ========== CONVERSION FUNCTIONS ========== */
 
+    /**
+     * @param token_in address of token which will be converted 
+     * @param token_out address of token which will be received 
+     */
     function convertFees(address token_in, address token_out) public onlyOwner {
         uint256 balance = IERC20Upgradeable(token_in).balanceOf(address(this));
         if (balance > 0) {
@@ -106,6 +142,10 @@ contract ERCFund is Initializable, OwnableUpgradeable {
         }
     }
 
+    /**
+     * @param token_in address of token which will be converted 
+     * @param token_out address of token which will be received 
+     */
     function convertFeesWithPath(address token_in, address token_out) public onlyOwner {
         uint256 balance = IERC20Upgradeable(token_in).balanceOf(address(this));
         if (balance > 0) {
@@ -116,6 +156,10 @@ contract ERCFund is Initializable, OwnableUpgradeable {
         }
     }
 
+    /**
+     * @param token_in address of token which will be converted 
+     * @param token_out address of token which will be received 
+     */
     function convertFeesWithPathForFeeOnTransferTokens(address token_in, address token_out) public onlyOwner {
         uint256 balance = IERC20Upgradeable(token_in).balanceOf(address(this));
         if (balance > 0) {
@@ -151,6 +195,10 @@ contract ERCFund is Initializable, OwnableUpgradeable {
 
     /* ========== EMERGENCY FUNCTIONS ========== */
 
+    /**
+     * @notice owner sends all amount of definite token to his/her own address
+     * @param token address of token to be recovered 
+     */
     function recover(address token) public onlyOwner {
         uint256 _token = IERC20Upgradeable(token).balanceOf(address(this));
         if (_token > 0) {
@@ -161,6 +209,11 @@ contract ERCFund is Initializable, OwnableUpgradeable {
 
     /* ========== UNISWAP FUNCTIONS ========== */
 
+    /**
+     * @param _from address of token to be swapped
+     * @param _to address of token to be received
+     * @param _amount amount of tokens to be swapped
+     */
     function _swapUniswap(
         address _from,
         address _to,
@@ -194,6 +247,10 @@ contract ERCFund is Initializable, OwnableUpgradeable {
         );
     }
 
+    /**
+     * @param path pair of token addresses to be swapped
+     * @param _amount amount of tokens to be swapped
+     */
     function _swapUniswapWithPath(
         address[] memory path,
         uint256 _amount
@@ -213,6 +270,10 @@ contract ERCFund is Initializable, OwnableUpgradeable {
         );
     }
 
+    /**
+     * @param path pair of token addresses to be swapped
+     * @param _amount amount of tokens to be swapped
+     */
     function _swapUniswapWithPathForFeeOnTransferTokens(
         address[] memory path,
         uint256 _amount

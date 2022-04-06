@@ -95,6 +95,10 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @dev Sender must not have an outstanding borrow balance in the asset,
      *  or be providing necessary collateral for an outstanding borrow.
      * @param mTokenAddress The address of the asset to be removed
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return Whether or not the account successfully exited the market
      */
     function exitMarket(
@@ -133,6 +137,10 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @param mToken The market to verify the redeem against
      * @param redeemer The account which would redeem the tokens
      * @param redeemTokens The number of mTokens to exchange for the underlying asset in the market
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function redeemAllowed(
@@ -167,6 +175,10 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @param mToken The market to verify the borrow against
      * @param borrower The account which would borrow the asset
      * @param borrowAmount The amount of underlying the account would borrow
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return 0 if the borrow is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function borrowAllowed(
@@ -209,6 +221,10 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param repayAmount The amount of underlying being repaid
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      */
     function liquidateBorrowAllowed(
         address mTokenBorrowed,
@@ -252,6 +268,10 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
      * @param transferTokens The number of mTokens to transfer
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return 0 if the transfer is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function transferAllowed(
@@ -275,6 +295,11 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
 
     /**
      * @notice Determine the current account liquidity wrt collateral requirements
+     * @param account The account to determine liquidity for
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return (possible error code (semi-opaque),
                 account liquidity in excess of collateral requirements,
      *          account shortfall below collateral requirements)
@@ -299,6 +324,10 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
+     * @param mTokenAssets - array of addresses of mToken asset. This assets can be formed by call `function accountAssets(address account)`, where account is address of borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of `mTokenAssets`. The prices scaled by 10**18
+     * @param accountAssetsPriceValidTo - the timestamp in seconds of prices validity
+     * @param accountAssetsPriceSignatures - array of ECDSA signatures of each price in `accountAssetsPriceMantissa`
      * @return (possible error code (semi-opaque),
                 hypothetical account liquidity in excess of collateral requirements,
      *          hypothetical account shortfall below collateral requirements)
@@ -324,6 +353,9 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @notice Returns the value of possible optimization left for asset
      * @param asset The MToken address
      * @param account The owner of asset
+     * @param assetPrice the price multiplied by 10**18
+     * @param assetPriceValidTo the timestamp in seconds that define the valid to period
+     * @param assetPriceSignature the sign of trusted thirdparty
      * @return The value of possible optimization
      */
     function getMaxOptimizableValue(
@@ -341,6 +373,9 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
      * @notice Returns the value of hypothetical optimization (ignoring existing optimization used) for asset
      * @param asset The MToken address
      * @param account The owner of asset
+     * @param assetPrice the price multiplied by 10**18
+     * @param assetPriceValidTo the timestamp in seconds that define the valid to period
+     * @param assetPriceSignature the sign of trusted thirdparty
      * @return The amount of hypothetical optimization
      */
     function getHypotheticalOptimizableValue(
@@ -354,6 +389,18 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
         return moartroller.getHypotheticalOptimizableValue(asset, account, _assetPrice);
     }
 
+    /**
+     * @notice Calculate number of tokens of collateral asset of the given user to seize given an underlying amount
+         * this function takes amount of collateral asset that is locked under protection.
+     * @param mTokenBorrowed Asset which was borrowed by the borrower
+     * @param mTokenCollateral Asset which was used as collateral and will be seized
+     * @param actualRepayAmount The amount of underlying being repaid
+     * @param account The account to determine liquidity for
+     * @param mTokenBorrowedCollateralPrice  - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
+     * @param priceValidTo - the timestamp in seconds of prices validity
+     * @param mTokenBorrowedCollateralPriceSignature - array of ECDSA signatures of each price in `mTokenBorrowedCollateralPrice`
+     * @return (possible errorCode | number of mTokenCollateral tokens to be seized in a liquidation)
+     */
     function liquidateCalculateSeizeUserTokens(
         address mTokenBorrowed, 
         address mTokenCollateral,

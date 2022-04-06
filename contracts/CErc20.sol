@@ -69,6 +69,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @notice Sender redeems mTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemTokens The number of mTokens to redeem into underlying
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(
@@ -84,6 +85,7 @@ contract MErc20 is MToken, MErc20Interface {
      * @notice Sender redeems mTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlying(
@@ -97,7 +99,9 @@ contract MErc20 is MToken, MErc20Interface {
 
     /**
       * @notice Sender borrows assets from the protocol to their own address
+      * @param borrower user who borrows assets from the protocol to their own address
       * @param borrowAmount The amount of the underlying asset to borrow
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function borrow(
@@ -109,6 +113,13 @@ contract MErc20 is MToken, MErc20Interface {
         return borrowInternal(borrower, borrowAmount, accountAssetsPriceMantissa);
     }
 
+    /**
+      * @notice Sender borrows assets from the protocol to somebodies address
+      * @param borrower The address of assets receiver 
+      * @param borrowAmount The amount of the underlying asset to borrow
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      */
     function borrowFor(
         address payable borrower, 
         uint borrowAmount,
@@ -121,6 +132,7 @@ contract MErc20 is MToken, MErc20Interface {
 
     /**
      * @notice Sender repays their own borrow
+     * @param repayer user who repays their own borrow
      * @param repayAmount The amount to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -135,6 +147,7 @@ contract MErc20 is MToken, MErc20Interface {
 
     /**
      * @notice Sender repays a borrow belonging to borrower.
+     * @param repayer user who repays a borrow belonging to borrower
      * @param borrower the account with the debt being payed off
      * @param repayAmount The amount to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -155,6 +168,8 @@ contract MErc20 is MToken, MErc20Interface {
      * @param borrower The borrower of this mToken to be liquidated
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @param mTokenCollateral The market in which to seize collateral from the borrower
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+     * @param mTokenBorrowedCollateralPrice  - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(

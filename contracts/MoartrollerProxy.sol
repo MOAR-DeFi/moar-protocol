@@ -110,7 +110,12 @@ contract MoartrollerProxy is MoartrollerProxyInterface, Initializable, OwnableUp
     ) external override returns (uint) {
         uint256[] memory _accountAssetsPriceMantissa = new uint256[](accountAssetsPriceMantissa.length);
         for(uint256 i = 0; i < _accountAssetsPriceMantissa.length; i++){
-            _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(mTokenAssets[i], accountAssetsPriceMantissa[i], accountAssetsPriceValidTo, accountAssetsPriceSignatures[i]);
+            _accountAssetsPriceMantissa[i] = priceOracle.getUnderlyingPriceSigned(
+                mTokenAssets[i],
+                accountAssetsPriceMantissa[i], 
+                accountAssetsPriceValidTo, 
+                accountAssetsPriceSignatures[i]
+            );
         }
         return moartroller.exitMarket(msg.sender, mTokenAddress, _accountAssetsPriceMantissa);
     }

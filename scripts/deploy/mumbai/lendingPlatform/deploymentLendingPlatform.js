@@ -21,7 +21,6 @@ module.exports = {
         let lendingRouter
 
         let proxyAdminAddress 
-        let priceOracleAddress
         let liquidityMathModelV1Address
         let liquidationModelV1Address
         let moartrollerProxyAddress
@@ -55,23 +54,24 @@ module.exports = {
         let mwethProxyAddress
         let mwmaticProxyAddress
 
-        let liquidationIncentive = '11000000000000000000' // 1.1 * 10**18
-        let closeFactor = '500000000000000000' // 0.5 * 10**18
+        let {
+            liquidationIncentive,
+            closeFactor,
 
-        // Rinkeby addresses
+            priceOracleAddress,
+            moarAddress,
+            usdcAddress,
+            usdtAddress,
+            daiAddress,
+            unnAddress, // Union ERC20 token address
+            linkAddress,
+            wbtcAddress,
+            wethAddress,
+            wmaticAddress,
+            uUnnAddress, // protection ERC721 address
+            unionRouter, // union router
 
-        let moarAddress = '0xe171bab47F29D3E083c85815e83489c0EcA0F506'
-        let usdcAddress = '0xBcbC9F8404b1993F11b1f64Fcba9F486a7d36A91'
-        let usdtAddress = '0xc87b137FCCCe47C9Af64EA730543843965f5856F'
-        let daiAddress = '0x69d4e0F24567C2FED7F8422C1de9e70d84553Df3'
-        let unnAddress = '0x49211BfCaE6e6E15fA92599F25D611B670dF7825' // Union ERC20 token address
-        let linkAddress = '0x6588a9A3A1f2BeEAa79D88E46Cb8E2D7E041050D'
-        let wbtcAddress = '0x79BaA6466413D11996E298E2e92Fe325EC0c7936'
-        let wethAddress = '0x004e3E2EA6DDF729090C1aB127c0e8E2DB40c16d'
-        let wmaticAddress = '0xd9be1D078074e233392838124EEB6E593516A82f'
-        
-        let uUnnAddress = '0xDaCa43f22e073E4e0f5C5ffF470A455ab88c41c2' // protection ERC721 address
-        let unionRouter = '0xC06D2AA783CB1d83c148D7aA615398dC05AfE216' // union router
+        } = require('../config.js')
 
         let signers = await ethers.getSigners()
         owner = signers[0]
@@ -91,8 +91,8 @@ module.exports = {
         const CopMapping = await ethers.getContractFactory("CopMapping")
         const MProtection = await ethers.getContractFactory("MProtection")
         const LendingRouter = await ethers.getContractFactory("LendingRouter");
-        const MErc20Proxy = await ethers.getContractFactory('MErc20Proxy');
-        const MErc20 = await ethers.getContractFactory('MErc20')
+        // const MErc20Proxy = await ethers.getContractFactory('MErc20Proxy');
+        // const MErc20 = await ethers.getContractFactory('MErc20')
     
         // ========================================= //
         // ProxyAdmin

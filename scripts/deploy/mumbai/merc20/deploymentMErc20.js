@@ -38,6 +38,8 @@ module.exports = {
         const MErc20Proxy = await ethers.getContractFactory('MErc20Proxy')
         const MErc20 = await ethers.getContractFactory('MErc20')
         const Moartroller = await ethers.getContractFactory("Moartroller")
+
+         /********** DEPLOYMENT MErc20Proxy **********/
         
         console.log("===== Deployment " + name + " =====");
         console.log("\nDeploying MErc20Proxy");
@@ -63,6 +65,8 @@ module.exports = {
         merc20Proxy = await MErc20Proxy.attach(merc20ProxyAddress);
         console.log("MErc20Proxy deployed!");
     
+        /********** DEPLOYMENT MErc20 **********/
+
         console.log("\nDeploying MErc20");
         merc20 = await MErc20.deploy();
         await merc20.deployed().then(function(instance){
@@ -87,8 +91,7 @@ module.exports = {
         console.log("MErc20 deployed!");
     
         await merc20Proxy.initialize(
-            merc20Address,
-            priceOracleAddress
+            merc20Address
         ).then(function(instance){
             console.log("\nTransaction hash: " + instance.hash);
             console.log("MErc20Proxy "+ merc20Proxy.address + " call initialize with params:");

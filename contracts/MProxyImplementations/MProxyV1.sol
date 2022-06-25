@@ -4,14 +4,17 @@ pragma solidity ^0.6.12;
 import "../Interfaces/EIP20Interface.sol";
 import "../Interfaces/MProxyInterface.sol";
 import "../Utils/SafeEIP20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
-contract MProxyV1 is MProxyInterface{
+contract MProxyV1 is Initializable, MProxyInterface{
 
     using SafeEIP20 for EIP20Interface;
 
-    address reservesReceiver;
+    address public reservesReceiver;
 
-    constructor(address _reservesReceiver) public {
+    function initialize(
+        address _reservesReceiver
+    ) public initializer {
         reservesReceiver = _reservesReceiver;
     }
 

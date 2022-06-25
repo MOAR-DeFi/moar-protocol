@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.6.12;
 
-import "./Interfaces/InterestRateModelInterface.sol";
+import "../Interfaces/InterestRateModelInterface.sol";
 
 abstract contract AbstractInterestRateModel is InterestRateModelInterface {
 

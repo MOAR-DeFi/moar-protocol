@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "size-contracts": "npx hardhat size-contracts"
   },
   "author": "",
   "license": "MIT",
@@ -17,7 +18,8 @@
     "@openzeppelin/contracts-upgradeable": "^3.3.0",
     "axios": "^0.21.1",
     "dotenv": "^8.6.0",
-    "fast-csv": "^4.3.5"
+    "fast-csv": "^4.3.5",
+    "hardhat-contract-sizer": "^2.4.0"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",

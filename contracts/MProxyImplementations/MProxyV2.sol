@@ -6,15 +6,20 @@ import "../Interfaces/MProxyInterface.sol";
 import "../Utils/SafeEIP20.sol";
 import "../Interfaces/Vesting/IMultiFeeDistribution.sol";
 import "../Interfaces/Vesting/IERCFund.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
-contract MProxyV2 is MProxyInterface{
+
+contract MProxyV2 is Initializable, MProxyInterface{
 
     using SafeEIP20 for EIP20Interface;
 
-    address vestingContract;
-    address reservesReceiver;
-
-    constructor(address _vestingContract, address _reservesReceiver) public {
+    address public vestingContract;
+    address public reservesReceiver;
+  
+    function initialize(
+        address _vestingContract,
+        address _reservesReceiver
+    ) public initializer{
         vestingContract = _vestingContract;
         reservesReceiver = _reservesReceiver;
     }

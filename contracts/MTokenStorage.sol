@@ -2,7 +2,7 @@
 pragma solidity ^0.6.12;
 
 import "./Moartroller.sol";
-import "./AbstractInterestRateModel.sol";
+import "./InterestRateModel/AbstractInterestRateModel.sol";
 
 abstract contract MTokenStorage {
     /**
@@ -44,12 +44,12 @@ abstract contract MTokenStorage {
     /**
      * @dev Administrator for this contract
      */
-    address payable public admin;
+    address payable internal admin;
 
     /**
      * @dev Pending administrator for this contract
      */
-    address payable public pendingAdmin;
+    address payable internal pendingAdmin;
 
     /**
      * @dev Contract which oversees inter-mToken operations
@@ -69,12 +69,12 @@ abstract contract MTokenStorage {
     /**
      * @dev Fraction of interest currently set aside for reserves
      */
-    uint public reserveFactorMantissa;
+    uint internal reserveFactorMantissa;
 
     /**
      * @dev Fraction of reserves currently set aside for other usage
      */
-    uint public reserveSplitFactorMantissa;
+    uint internal reserveSplitFactorMantissa;
 
     /**
      * @dev Block number that interest was last accrued at
@@ -149,7 +149,7 @@ abstract contract MTokenStorage {
     /**
      * @dev Mapping of account addresses to outstanding borrow balances
      */
-    mapping(address => BorrowSnapshot) public accountBorrows;
+    mapping(address => BorrowSnapshot) internal accountBorrows;
 
 
 }

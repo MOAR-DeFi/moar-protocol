@@ -3,8 +3,10 @@
 pragma solidity >=0.6.0 <0.8.0;
 
 import "../Interfaces/EIP20Interface.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+// import "@openzeppelin/contracts/math/SafeMath.sol";
+// import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
 /**
  * @title SafeEIP20
@@ -18,8 +20,8 @@ import "@openzeppelin/contracts/utils/Address.sol";
  * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
  */
 library SafeEIP20 {
-    using SafeMath for uint256;
-    using Address for address;
+    using SafeMathUpgradeable for uint256;
+    using AddressUpgradeable for address;
 
     function safeTransfer(EIP20Interface token, address to, uint256 value) internal {
         _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));

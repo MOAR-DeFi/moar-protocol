@@ -8,7 +8,7 @@ import "./MTokenStorage.sol";
 import "./Interfaces/MTokenInterface.sol";
 import "./Interfaces/MProxyInterface.sol";
 import "./Moartroller.sol";
-import "./AbstractInterestRateModel.sol";
+import "./InterestRateModel/AbstractInterestRateModel.sol";
 
 /**
  * @title MOAR's MToken Contract
@@ -82,6 +82,11 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      */
     event NewReserveFactor(uint oldReserveFactorMantissa, uint newReserveFactorMantissa);
 
+     /**
+     * @notice Event emitted when the split reserve factor is changed
+     */
+    event NewSplitReserveFactor(uint oldReserveFactorMantissa, uint newReserveFactorMantissa);
+
     /**
      * @notice Event emitted when the reserves are added
      */
@@ -121,30 +126,32 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param symbol_ EIP-20 symbol of this token
      * @param decimals_ EIP-20 decimal precision of this token
      */
-    function init(Moartroller moartroller_,
-                        AbstractInterestRateModel interestRateModel_,
-                        uint initialExchangeRateMantissa_,
-                        string memory name_,
-                        string memory symbol_,
-                        uint8 decimals_) public {
-        require(msg.sender == admin, "not_admin");
-        require(accrualBlockNumber == 0 && borrowIndex == 0, "already_init");
+    function init(
+        Moartroller moartroller_,
+        AbstractInterestRateModel interestRateModel_,
+        uint initialExchangeRateMantissa_,
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_
+    ) public {
+        require(msg.sender == admin, "notAdmin");
+        require(accrualBlockNumber == 0 && borrowIndex == 0, "inited");
 
         // Set initial exchange rate
         initialExchangeRateMantissa = initialExchangeRateMantissa_;
-        require(initialExchangeRateMantissa > 0, "too_low");
+        require(initialExchangeRateMantissa > 0, "tooLow");
 
         // Set the moartroller
-        uint err = _setMoartroller(moartroller_);
-        require(err == uint(Error.NO_ERROR), "setting moartroller failed");
+        //uint err = _setMoartroller(moartroller_);
+        require( _setMoartroller(moartroller_) == uint(Error.NO_ERROR), "setMoartrollerFail");
 
         // Initialize block number and borrow index (block number mocks depend on moartroller being set)
-        accrualBlockNumber = getBlockNumber();
+        accrualBlockNumber = block.number;
         borrowIndex = mantissaOne;
 
         // Set the interest rate model (depends on block number / borrow index)
-        err = _setInterestRateModelFresh(interestRateModel_);
-        require(err == uint(Error.NO_ERROR), "setting IRM failed");
+        //err = _setInterestRateModelFresh(interestRateModel_);
+        require(_setInterestRateModelFresh(interestRateModel_) == uint(Error.NO_ERROR), "setIRMfail");
 
         name = name_;
         symbol = symbol_;
@@ -168,9 +175,15 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param tokens The number of tokens to transfer
      * @return Whether or not the transfer succeeded
      */
-    function transferTokens(address spender, address src, address dst, uint tokens) internal returns (uint) {
+    function transferTokens(
+        address spender, 
+        address src, 
+        address dst, 
+        uint tokens,
+        uint256[] memory accountAssetsPriceMantissa
+    ) internal returns (uint) {
         /* Fail if transfer not allowed */
-        uint allowed = moartroller.transferAllowed(address(this), src, dst, tokens);
+        uint allowed = moartroller.transferAllowed(address(this), src, dst, tokens, accountAssetsPriceMantissa);
         if (allowed != 0) {
             return failOpaque(Error.MOARTROLLER_REJECTION, FailureInfo.TRANSFER_MOARTROLLER_REJECTION, allowed);
         }
@@ -224,9 +237,6 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         /* We emit a Transfer event */
         emit Transfer(src, dst, tokens);
 
-        // unused function
-        // moartroller.transferVerify(address(this), src, dst, tokens);
-
         return uint(Error.NO_ERROR);
     }
 
@@ -235,9 +245,14 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param dst The address of the destination account
      * @param amount The number of tokens to transfer
      * @return Whether or not the transfer succeeded
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
      */
-    function transfer(address dst, uint256 amount) external virtual override nonReentrant returns (bool) {
-        return transferTokens(msg.sender, msg.sender, dst, amount) == uint(Error.NO_ERROR);
+    function transfer(
+        address dst, 
+        uint256 amount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) external virtual override nonReentrant returns (bool) {
+        return transferTokens(msg.sender, msg.sender, dst, amount, accountAssetsPriceMantissa) == uint(Error.NO_ERROR);
     }
 
     /**
@@ -245,10 +260,17 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param src The address of the source account
      * @param dst The address of the destination account
      * @param amount The number of tokens to transfer
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return Whether or not the transfer succeeded
      */
-    function transferFrom(address src, address dst, uint256 amount) external virtual override nonReentrant returns (bool) {
-        return transferTokens(msg.sender, src, dst, amount) == uint(Error.NO_ERROR);
+    function transferFrom(
+        address src, 
+        address dst, 
+        uint256 amount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) external virtual override nonReentrant returns (bool) {
+        return transferTokens(msg.sender, src, dst, amount, accountAssetsPriceMantissa) == uint(Error.NO_ERROR);
     }
 
     /**
@@ -260,9 +282,9 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @return Whether or not the approval succeeded
      */
     function approve(address spender, uint256 amount) external virtual override returns (bool) {
-        address src = msg.sender;
-        transferAllowances[src][spender] = amount;
-        emit Approval(src, spender, amount);
+        //address src = msg.sender;
+        transferAllowances[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
         return true;
     }
 
@@ -294,7 +316,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
     function balanceOfUnderlying(address owner) external virtual override returns (uint) {
         Exp memory exchangeRate = Exp({mantissa: exchangeRateCurrent()});
         (MathError mErr, uint balance) = mulScalarTruncate(exchangeRate, accountTokens[owner]);
-        require(mErr == MathError.NO_ERROR, "balance_calculation_failed");
+        require(mErr == MathError.NO_ERROR, "balanceCalcErr");
         return balance;
     }
 
@@ -324,13 +346,13 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         return (uint(Error.NO_ERROR), mTokenBalance, borrowBalance, exchangeRateMantissa);
     }
 
-    /**
-     * @dev Function to simply retrieve block number
-     *  This exists mainly for inheriting test contracts to stub this result.
-     */
-    function getBlockNumber() internal view returns (uint) {
-        return block.number;
-    }
+    // /**
+    //  * @dev Function to simply retrieve block number
+    //  *  This exists mainly for inheriting test contracts to stub this result.
+    //  */
+    // function getBlockNumber() internal view returns (uint) {
+    //     return block.number;
+    // }
 
     /**
      * @notice Returns the current per-block borrow interest rate for this mToken
@@ -353,7 +375,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @return The total borrows with interest
      */
     function totalBorrowsCurrent() external virtual override nonReentrant returns (uint) {
-        require(accrueInterest() == uint(Error.NO_ERROR), "accrue interest failed");
+        require(accrueInterest() == uint(Error.NO_ERROR), "interestErr1");
         return totalBorrows;
     }
 
@@ -363,7 +385,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @return The calculated balance
      */
     function borrowBalanceCurrent(address account) external virtual override nonReentrant returns (uint) {
-        require(accrueInterest() == uint(Error.NO_ERROR), "accrue interest failed");
+        require(accrueInterest() == uint(Error.NO_ERROR), "interestErr2");
         return borrowBalanceStored(account);
     }
 
@@ -374,7 +396,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      */
     function borrowBalanceStored(address account) public virtual view returns (uint) {
         (MathError err, uint result) = borrowBalanceStoredInternal(account);
-        require(err == MathError.NO_ERROR, "borrowBalanceStored failed");
+        require(err == MathError.NO_ERROR, "borrowBalanceStoredErr");
         return result;
     }
 
@@ -420,7 +442,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @return Calculated exchange rate scaled by 1e18
      */
     function exchangeRateCurrent() public virtual nonReentrant returns (uint) {
-        require(accrueInterest() == uint(Error.NO_ERROR), "accrue interest failed");
+        require(accrueInterest() == uint(Error.NO_ERROR), "interestErr3");
         return exchangeRateStored();
     }
 
@@ -431,7 +453,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      */
     function exchangeRateStored() public virtual view returns (uint) {
         (MathError err, uint result) = exchangeRateStoredInternal();
-        require(err == MathError.NO_ERROR, "exchangeRateStored failed");
+        require(err == MathError.NO_ERROR, "exchangeRateStoredFail");
         return result;
     }
 
@@ -453,12 +475,12 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
              * Otherwise:
              *  exchangeRate = (totalCash + totalBorrows - totalReserves) / totalSupply
              */
-            uint totalCash = getCashPrior();
+            //uint totalCash = getCashPrior();
             uint cashPlusBorrowsMinusReserves;
             Exp memory exchangeRate;
             MathError mathErr;
 
-            (mathErr, cashPlusBorrowsMinusReserves) = addThenSubUInt(totalCash, totalBorrows, totalReserves);
+            (mathErr, cashPlusBorrowsMinusReserves) = addThenSubUInt(/**totalCash*/ getCashPrior(), totalBorrows, totalReserves);
             if (mathErr != MathError.NO_ERROR) {
                 return (mathErr, 0);
             }
@@ -481,27 +503,27 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
     }
 
     function getRealBorrowIndex() public view returns (uint) {
-        uint currentBlockNumber = getBlockNumber();
-        uint accrualBlockNumberPrior = accrualBlockNumber;
-        uint cashPrior = getCashPrior();
-        uint borrowsPrior = totalBorrows;
-        uint reservesPrior = totalReserves;
-        uint borrowIndexPrior = borrowIndex;
+        //uint currentBlockNumber = block.number;
+        //uint accrualBlockNumberPrior = accrualBlockNumber;
+        //uint cashPrior = getCashPrior();
+        //uint borrowsPrior = totalBorrows;
+        //uint reservesPrior = totalReserves;
+        //uint borrowIndexPrior = borrowIndex;
 
-        uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate too high");
+        uint borrowRateMantissa = interestRateModel.getBorrowRate(getCashPrior(), totalBorrows, totalReserves);
+        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrowRateTooHigh");
 
-        (MathError mathErr, uint blockDelta) = subUInt(currentBlockNumber, accrualBlockNumberPrior);
-        require(mathErr == MathError.NO_ERROR, "could not calc block delta");
+        (MathError mathErr, uint blockDelta) = subUInt(block.number, accrualBlockNumber);
+        require(mathErr == MathError.NO_ERROR, "blockDeltaErr");
 
         Exp memory simpleInterestFactor;
         uint borrowIndexNew;
 
         (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
-        require(mathErr == MathError.NO_ERROR, "could not calc simpleInterestFactor");
+        require(mathErr == MathError.NO_ERROR, "simpleInterestFactorErr");
 
-        (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndexPrior, borrowIndexPrior);
-        require(mathErr == MathError.NO_ERROR, "could not calc borrowIndex");
+        (mathErr, borrowIndexNew) = mulScalarTruncateAddUInt(simpleInterestFactor, borrowIndex, borrowIndex);
+        require(mathErr == MathError.NO_ERROR, "borrowIndexErr");
 
         return borrowIndexNew;
     }
@@ -513,11 +535,11 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      */
     function accrueInterest() public virtual returns (uint) {
         /* Remember the initial block number */
-        uint currentBlockNumber = getBlockNumber();
-        uint accrualBlockNumberPrior = accrualBlockNumber;
+        // uint currentBlockNumber = block.number;
+        // uint accrualBlockNumberPrior = accrualBlockNumber;
 
         /* Short-circuit accumulating 0 interest */
-        if (accrualBlockNumberPrior == currentBlockNumber) {
+        if (accrualBlockNumber == block.number) {
             return uint(Error.NO_ERROR);
         }
 
@@ -529,11 +551,11 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         /* Calculate the current borrow interest rate */
         uint borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
-        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate too high");
+        require(borrowRateMantissa <= borrowRateMaxMantissa, "borrowRateTooHigh");
 
         /* Calculate the number of blocks elapsed since the last accrual */
-        (MathError mathErr, uint blockDelta) = subUInt(currentBlockNumber, accrualBlockNumberPrior);
-        require(mathErr == MathError.NO_ERROR, "could not calc block delta");
+        (MathError mathErr, uint blockDelta) = subUInt(block.number, accrualBlockNumber);
+        require(mathErr == MathError.NO_ERROR, "blockDeltaErr");
 
         /*
          * Calculate the interest accumulated into borrows and reserves and the new index:
@@ -592,7 +614,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         // (No safe failures beyond this point)
 
         /* We write the previously calculated values into storage */
-        accrualBlockNumber = currentBlockNumber;
+        accrualBlockNumber = block.number;
         borrowIndex = temp.borrowIndexNew;
         totalBorrows = temp.totalBorrowsNew;
         totalReserves = temp.totalReservesNew;
@@ -615,14 +637,14 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param mintAmount The amount of the underlying asset to supply
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual mint amount.
      */
-    function mintInternal(uint mintAmount) internal nonReentrant returns (uint, uint) {
+    function mintInternal(address minter, uint mintAmount) internal nonReentrant returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return (fail(Error(error), FailureInfo.MINT_ACCRUE_INTEREST_FAILED), 0);
         }
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
-        return mintFresh(msg.sender, mintAmount);
+        return mintFresh(minter, mintAmount);
     }
 
     struct MintLocalVars {
@@ -650,7 +672,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.MINT_FRESHNESS_CHECK), 0);
         }
 
@@ -713,32 +735,44 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @notice Sender redeems mTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemTokens The number of mTokens to redeem into underlying
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemInternal(uint redeemTokens) internal nonReentrant returns (uint) {
+    function redeemInternal(
+        address redeemer,
+        uint redeemTokens,
+        uint256[] memory accountAssetsPriceMantissa
+    ) internal nonReentrant returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
             return fail(Error(error), FailureInfo.REDEEM_ACCRUE_INTEREST_FAILED);
         }
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
-        return redeemFresh(msg.sender, redeemTokens, 0);
+        return redeemFresh(payable(redeemer), redeemTokens, 0, accountAssetsPriceMantissa);
     }
 
     /**
      * @notice Sender redeems mTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to receive from redeeming mTokens
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemUnderlyingInternal(uint redeemAmount) internal nonReentrant returns (uint) {
+    function redeemUnderlyingInternal(
+        address redeemer,
+        uint redeemAmount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) internal nonReentrant returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
             return fail(Error(error), FailureInfo.REDEEM_ACCRUE_INTEREST_FAILED);
         }
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
-        return redeemFresh(msg.sender, 0, redeemAmount);
+        return redeemFresh(payable(redeemer), 0, redeemAmount, accountAssetsPriceMantissa);
     }
 
     struct RedeemLocalVars {
@@ -757,10 +791,17 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param redeemer The address of the account which is redeeming the tokens
      * @param redeemTokensIn The number of mTokens to redeem into underlying (only one of redeemTokensIn or redeemAmountIn may be non-zero)
      * @param redeemAmountIn The number of underlying tokens to receive from redeeming mTokens (only one of redeemTokensIn or redeemAmountIn may be non-zero)
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemFresh(address payable redeemer, uint redeemTokensIn, uint redeemAmountIn) internal returns (uint) {
-        require(redeemTokensIn == 0 || redeemAmountIn == 0, "redeemFresh_missing_zero");
+    function redeemFresh(
+        address payable redeemer, 
+        uint redeemTokensIn, 
+        uint redeemAmountIn,
+        uint256[] memory accountAssetsPriceMantissa
+    ) internal returns (uint) {
+        require(redeemTokensIn == 0 || redeemAmountIn == 0, "4");
 
         RedeemLocalVars memory vars;
 
@@ -799,13 +840,13 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         /* Fail if redeem not allowed */
-        uint allowed = moartroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
+        uint allowed = moartroller.redeemAllowed(address(this), redeemer, vars.redeemTokens, accountAssetsPriceMantissa);
         if (allowed != 0) {
             return failOpaque(Error.MOARTROLLER_REJECTION, FailureInfo.REDEEM_MOARTROLLER_REJECTION, allowed);
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.REDEEM_FRESHNESS_CHECK);
         }
 
@@ -867,26 +908,45 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
       * @notice Sender borrows assets from the protocol to their own address
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
       */
-    function borrowInternal(uint borrowAmount) internal nonReentrant returns (uint) {
+    function borrowInternal(
+        address borrower,
+        uint borrowAmount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) internal nonReentrant returns (uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return fail(Error(error), FailureInfo.BORROW_ACCRUE_INTEREST_FAILED);
         }
         // borrowFresh emits borrow-specific logs on errors, so we don't need to
-        return borrowFresh(msg.sender, borrowAmount);
+        return borrowFresh(payable(borrower), borrowAmount, accountAssetsPriceMantissa);
     }
 
-    function borrowForInternal(address payable borrower, uint borrowAmount) internal nonReentrant returns (uint) {
-        require(moartroller.isPrivilegedAddress(msg.sender), "permission_missing");
+    /**
+      * @notice Sender borrows assets from the protocol to somebodies address
+      * @param borrower The address of assets receiver 
+      * @param borrowAmount The amount of the underlying asset to borrow
+      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+      * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+
+      */
+
+    function borrowForInternal(
+        address payable borrower, 
+        uint borrowAmount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) internal nonReentrant returns (uint) {
+        require(moartroller.privilegedAddresses(msg.sender) == 1, "5");
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return fail(Error(error), FailureInfo.BORROW_ACCRUE_INTEREST_FAILED);
         }
         // borrowFresh emits borrow-specific logs on errors, so we don't need to
-        return borrowFresh(borrower, borrowAmount);
+        return borrowFresh(borrower, borrowAmount, accountAssetsPriceMantissa);
     }
 
     struct BorrowLocalVars {
@@ -898,18 +958,23 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
     /**
       * @notice Users borrow assets from the protocol to their own address
+      * @param borrower The address of assets receiver 
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function borrowFresh(address payable borrower, uint borrowAmount) internal returns (uint) {
+    function borrowFresh(
+        address payable borrower, 
+        uint borrowAmount,
+        uint256[] memory accountAssetsPriceMantissa
+    ) internal returns (uint) {
         /* Fail if borrow not allowed */
-        uint allowed = moartroller.borrowAllowed(address(this), borrower, borrowAmount);
+        uint allowed = moartroller.borrowAllowed(address(this), borrower, borrowAmount, accountAssetsPriceMantissa);
         if (allowed != 0) {
             return failOpaque(Error.MOARTROLLER_REJECTION, FailureInfo.BORROW_MOARTROLLER_REJECTION, allowed);
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.BORROW_FRESHNESS_CHECK);
         }
 
@@ -959,11 +1024,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         /* We emit a Borrow event */
         emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
-
-        /* We call the defense hook */
-        //unused function
-        // moartroller.borrowVerify(address(this), borrower, borrowAmount);
-
+       
         return uint(Error.NO_ERROR);
     }
 
@@ -972,14 +1033,17 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param repayAmount The amount to repay
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function repayBorrowInternal(uint repayAmount) internal nonReentrant returns (uint, uint) {
+    function repayBorrowInternal(
+        address repayer,   
+        uint repayAmount
+    ) internal nonReentrant returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return (fail(Error(error), FailureInfo.REPAY_BORROW_ACCRUE_INTEREST_FAILED), 0);
         }
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
-        return repayBorrowFresh(msg.sender, msg.sender, repayAmount);
+        return repayBorrowFresh(repayer, repayer, repayAmount);
     }
 
     /**
@@ -988,14 +1052,14 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param repayAmount The amount to repay
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function repayBorrowBehalfInternal(address borrower, uint repayAmount) internal nonReentrant returns (uint, uint) {
+    function repayBorrowBehalfInternal(address repayer, address borrower, uint repayAmount) internal nonReentrant returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return (fail(Error(error), FailureInfo.REPAY_BEHALF_ACCRUE_INTEREST_FAILED), 0);
         }
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
-        return repayBorrowFresh(msg.sender, borrower, repayAmount);
+        return repayBorrowFresh(repayer, borrower, repayAmount);
     }
 
     struct RepayBorrowLocalVars {
@@ -1024,7 +1088,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.REPAY_BORROW_FRESHNESS_CHECK), 0);
         }
 
@@ -1042,7 +1106,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         /* If repayAmount == -1, repayAmount = accountBorrows */
         /* If the borrow is repaid by another user -1 cannot be used to prevent borrow front-running */
         if (repayAmount == uint(-1)) {
-            require(tx.origin == borrower, "specify a precise amount");
+            require(tx.origin == borrower, "6");
             vars.repayAmount = vars.accountBorrows;
         } else {
             vars.repayAmount = repayAmount;
@@ -1067,10 +1131,10 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
          *  totalBorrowsNew = totalBorrows - actualRepayAmount
          */
         (vars.mathErr, vars.accountBorrowsNew) = subUInt(vars.accountBorrows, vars.actualRepayAmount);
-        require(vars.mathErr == MathError.NO_ERROR, "BORROW_BALANCE_CALCULATION_FAILED");
+        require(vars.mathErr == MathError.NO_ERROR, "7");
 
         (vars.mathErr, vars.totalBorrowsNew) = subUInt(totalBorrows, vars.actualRepayAmount);
-        require(vars.mathErr == MathError.NO_ERROR, "TOTAL_BALANCE_CALCULATION_FAILED");
+        require(vars.mathErr == MathError.NO_ERROR, "8");
 
         /* We write the previously calculated values into storage */
         accountBorrows[borrower].principal = vars.accountBorrowsNew;
@@ -1093,9 +1157,18 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param borrower The borrower of this mToken to be liquidated
      * @param mTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+     * @param mTokenBorrowedCollateralPrice - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function liquidateBorrowInternal(address borrower, uint repayAmount, MToken mTokenCollateral) internal nonReentrant returns (uint, uint) {
+    function liquidateBorrowInternal(
+        address liquidator,
+        address borrower, 
+        uint repayAmount, 
+        MToken mTokenCollateral,
+        uint256[] calldata accountAssetsPriceMantissa,
+        uint256[] calldata mTokenBorrowedCollateralPrice
+    ) internal nonReentrant returns (uint, uint) {
         uint error = accrueInterest();
         if (error != uint(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
@@ -1109,9 +1182,22 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         // liquidateBorrowFresh emits borrow-specific logs on errors, so we don't need to
-        return liquidateBorrowFresh(msg.sender, borrower, repayAmount, mTokenCollateral);
+        return liquidateBorrowFresh(
+            liquidator, 
+            borrower, 
+            repayAmount, 
+            mTokenCollateral, 
+            accountAssetsPriceMantissa,
+            mTokenBorrowedCollateralPrice
+        );
     }
 
+    struct LiquidateBorrowFreshLocalVars {
+        address liquidator; 
+        address borrower;
+        uint repayAmount; 
+        MToken mTokenCollateral;
+    }
     /**
      * @notice The liquidator liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
@@ -1119,43 +1205,64 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @param liquidator The address repaying the borrow and seizing collateral
      * @param mTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
+     * @param accountAssetsPriceMantissa - the array of prices of each underlying asset of (array of addresses of mToken asset). The prices scaled by 10**18
+     * @param mTokenBorrowedCollateralPrice  - pair of assets prices which were {1) borrowed by the borrower | 2) used as collateral and will be seized } 
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function liquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, MToken mTokenCollateral) internal returns (uint, uint) {
+    function liquidateBorrowFresh(
+        address liquidator, 
+        address borrower, 
+        uint repayAmount, 
+        MToken mTokenCollateral,
+        uint256[] calldata accountAssetsPriceMantissa,
+        uint256[] calldata mTokenBorrowedCollateralPrice
+    ) internal returns (uint, uint) {
+        LiquidateBorrowFreshLocalVars memory vars;
+        vars.liquidator = liquidator;
+        vars.borrower = borrower;
+        vars.repayAmount = repayAmount;
+        vars.mTokenCollateral = mTokenCollateral;
         /* Fail if liquidate not allowed */
-        uint allowed = moartroller.liquidateBorrowAllowed(address(this), address(mTokenCollateral), liquidator, borrower, repayAmount);
+        uint allowed = moartroller.liquidateBorrowAllowed(
+            address(this), 
+            address(vars.mTokenCollateral), 
+            vars.liquidator, 
+            vars.borrower, 
+            vars.repayAmount, 
+            accountAssetsPriceMantissa
+        );
         if (allowed != 0) {
             return (failOpaque(Error.MOARTROLLER_REJECTION, FailureInfo.LIQUIDATE_MOARTROLLER_REJECTION, allowed), 0);
         }
 
         /* Verify market's block number equals current block number */
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.LIQUIDATE_FRESHNESS_CHECK), 0);
         }
 
         /* Verify mTokenCollateral market's block number equals current block number */
-        if (mTokenCollateral.accrualBlockNumber() != getBlockNumber()) {
+        if (vars.mTokenCollateral.accrualBlockNumber() != block.number) {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.LIQUIDATE_COLLATERAL_FRESHNESS_CHECK), 0);
         }
 
         /* Fail if borrower = liquidator */
-        if (borrower == liquidator) {
+        if (vars.borrower == vars.liquidator) {
             return (fail(Error.INVALID_ACCOUNT_PAIR, FailureInfo.LIQUIDATE_LIQUIDATOR_IS_BORROWER), 0);
         }
 
         /* Fail if repayAmount = 0 */
-        if (repayAmount == 0) {
+        if (vars.repayAmount == 0) {
             return (fail(Error.INVALID_CLOSE_AMOUNT_REQUESTED, FailureInfo.LIQUIDATE_CLOSE_AMOUNT_IS_ZERO), 0);
         }
 
         /* Fail if repayAmount = -1 */
-        if (repayAmount == uint(-1)) {
+        if (vars.repayAmount == uint(-1)) {
             return (fail(Error.INVALID_CLOSE_AMOUNT_REQUESTED, FailureInfo.LIQUIDATE_CLOSE_AMOUNT_IS_UINT_MAX), 0);
         }
 
 
         /* Fail if repayBorrow fails */
-        (uint repayBorrowError, uint actualRepayAmount) = repayBorrowFresh(liquidator, borrower, repayAmount);
+        (uint repayBorrowError, uint actualRepayAmount) = repayBorrowFresh(vars.liquidator, vars.borrower, vars.repayAmount);
         if (repayBorrowError != uint(Error.NO_ERROR)) {
             return (fail(Error(repayBorrowError), FailureInfo.LIQUIDATE_REPAY_BORROW_FRESH_FAILED), 0);
         }
@@ -1165,30 +1272,33 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         // (No safe failures beyond this point)
 
         /* We calculate the number of collateral tokens that will be seized */
-        (uint amountSeizeError, uint seizeTokens) = moartroller.liquidateCalculateSeizeUserTokens(address(this), address(mTokenCollateral), actualRepayAmount, borrower);
-        require(amountSeizeError == uint(Error.NO_ERROR), "CALCULATE_AMOUNT_SEIZE_FAILED");
+        (uint amountSeizeError, uint seizeTokens) = moartroller.liquidateCalculateSeizeUserTokens(
+            address(this), 
+            address(vars.mTokenCollateral), 
+            actualRepayAmount, 
+            vars.borrower,
+            mTokenBorrowedCollateralPrice
+        );
+        require(amountSeizeError == uint(Error.NO_ERROR), "9");
 
         /* Revert if borrower collateral token balance < seizeTokens */
-        require(mTokenCollateral.balanceOf(borrower) >= seizeTokens, "TOO_MUCH");
+        require(vars.mTokenCollateral.balanceOf(vars.borrower) >= seizeTokens, "tooMuch");
 
         // If this is also the collateral, run seizeInternal to avoid re-entrancy, otherwise make an external call
         uint seizeError;
-        if (address(mTokenCollateral) == address(this)) {
-            seizeError = seizeInternal(address(this), liquidator, borrower, seizeTokens);
+        if (address(vars.mTokenCollateral) == address(this)) {
+            seizeError = seizeInternal(address(this), vars.liquidator, vars.borrower, seizeTokens);
         } else {
-            seizeError = mTokenCollateral.seize(liquidator, borrower, seizeTokens);
+            seizeError = vars.mTokenCollateral.seize(vars.liquidator, vars.borrower, seizeTokens);
         }
 
         /* Revert if seize tokens fails (since we cannot be sure of side effects) */
-        require(seizeError == uint(Error.NO_ERROR), "token seizure failed");
+        require(seizeError == uint(Error.NO_ERROR), "tokenSeizureFail");
 
         /* We emit a LiquidateBorrow event */
-        emit LiquidateBorrow(liquidator, borrower, actualRepayAmount, address(mTokenCollateral), seizeTokens);
+        emit LiquidateBorrow(vars.liquidator, vars.borrower, actualRepayAmount, address(vars.mTokenCollateral), seizeTokens);
 
-        /* We call the defense hook */
-        // unused function
-        // moartroller.liquidateBorrowVerify(address(this), address(mTokenCollateral), liquidator, borrower, actualRepayAmount, seizeTokens);
-
+       
         return (uint(Error.NO_ERROR), actualRepayAmount);
     }
 
@@ -1331,7 +1441,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
 
         Moartroller oldMoartroller = moartroller;
         // Ensure invoke moartroller.isMoartroller() returns true
-        require(newMoartroller.isMoartroller(), "not_moartroller");
+        require(newMoartroller.isMoartroller(), "notMoartroller");
 
         // Set market's moartroller to newMoartroller
         moartroller = newMoartroller;
@@ -1358,9 +1468,15 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
     }
 
     function _setReserveSplitFactor(uint newReserveSplitFactorMantissa) external nonReentrant returns (uint) {
-         if (msg.sender != admin) {
+       // Check newReserveSplitFactorMantissa ≤ maxReserveFactor
+        if (newReserveSplitFactorMantissa > reserveFactorMaxMantissa) {
+            return fail(Error.BAD_INPUT, FailureInfo.SET_RESERVE_FACTOR_BOUNDS_CHECK);
+        }
+        if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_RESERVE_FACTOR_ADMIN_CHECK);
         }
+        emit NewSplitReserveFactor(reserveSplitFactorMantissa, newReserveSplitFactorMantissa);
+
         reserveSplitFactorMantissa = newReserveSplitFactorMantissa;
         return uint(Error.NO_ERROR);
     }
@@ -1377,7 +1493,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         // Verify market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.SET_RESERVE_FACTOR_FRESH_CHECK);
         }
 
@@ -1423,7 +1539,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         uint actualAddAmount;
 
         // We fail gracefully unless market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.ADD_RESERVES_FRESH_CHECK), actualAddAmount);
         }
 
@@ -1488,7 +1604,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         // We fail gracefully unless market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.REDUCE_RESERVES_FRESH_CHECK);
         }
 
@@ -1554,7 +1670,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         }
 
         // We fail gracefully unless market's block number equals current block number
-        if (accrualBlockNumber != getBlockNumber()) {
+        if (accrualBlockNumber != block.number) {
             return fail(Error.MARKET_NOT_FRESH, FailureInfo.SET_INTEREST_RATE_MODEL_FRESH_CHECK);
         }
 
@@ -1562,7 +1678,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         oldInterestRateModel = interestRateModel;
 
         // Ensure invoke newInterestRateModel.isInterestRateModel() returns true
-        require(newInterestRateModel.isInterestRateModel(), "not_interest_model");
+        require(newInterestRateModel.isInterestRateModel(), "notInterestModel");
 
         // Set the interest rate model to newInterestRateModel
         interestRateModel = newInterestRateModel;
@@ -1587,14 +1703,6 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
         emit MpcUpdated(newMPC);
 
         return uint(Error.NO_ERROR);
-    }
-
-    /**
-     * @notice Returns address of underlying token
-     * @return address of underlying token
-     */
-    function getUnderlying() external override view returns(address){
-        return underlying;
     }
 
     /*** Safe Token ***/
@@ -1626,7 +1734,7 @@ abstract contract MToken is MTokenInterface, Exponential, TokenErrorReporter, MT
      * @dev Prevents a contract from calling itself, directly or indirectly.
      */
     modifier nonReentrant() {
-        require(_notEntered, "re-entered");
+        require(_notEntered, "reentered");
         _notEntered = false;
         _;
         _notEntered = true; // get a gas-refund post-Istanbul

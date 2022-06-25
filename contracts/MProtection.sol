@@ -46,11 +46,20 @@ contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoErro
     event MaturityWindowUpdated(uint newMaturityWindow);
 
     Counters.Counter private _tokenIds;
+    /// @notice The address of data mapper for C-OP
     address private _copMappingAddress;
+
+    /// @notice The address of moartroller contract
     address private _moartrollerAddress;
+
+    /// @notice The mapping of MProtection Tokens
     mapping (uint256 => uint256) private _underlyingProtectionTokensMapping;
+
+    /// @notice The mapping of locked token amount 
     mapping (uint256 => uint256) private _underlyingProtectionLockedValue;
+
     mapping (address => mapping (address => EnumerableSet.UintSet)) private _protectionCurrencyMapping;
+
     uint256 public _maturityWindow;
 
     struct ProtectionMappedData{
@@ -183,7 +192,7 @@ contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoErro
      * @param tokenId ID of MProtection to check
      */
     function isUserProtection(address owner, uint256 tokenId) public view returns(bool) {
-        if(Moartroller(_moartrollerAddress).isPrivilegedAddress(msg.sender)){
+        if(Moartroller(_moartrollerAddress).privilegedAddresses(msg.sender) == 1){
             return true;
         }
         return owner == ownerOf(tokenId);
@@ -279,7 +288,16 @@ contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoErro
             1e18
         );
     }
+    struct LockProtectionValueLocalVars {
+        uint256 tokenId;
+        uint256 value;
+        uint256 mTokenPrice;
+        uint256 validTo;
+        address currency;
+        Moartroller moartroller;
+        MToken mToken;
 
+    }
     /**
      * @notice Locks the given protection value as collateral optimization
      * @param tokenId The MProtection token id
@@ -287,33 +305,46 @@ contract MProtection is ERC721Upgradeable, OwnableUpgradeable, ExponentialNoErro
      * @return locked protection value
      * TODO: convert semantic errors to standarized error codes
      */
-    function lockProtectionValue(uint256 tokenId, uint value) external returns(uint) {
+    function lockProtectionValue(
+        uint256 tokenId, 
+        uint value,
+        uint256 mTokenPrice,
+        uint256 validTo,
+        bytes calldata mTokenPriceSignature
+    ) external returns(uint) {
+        LockProtectionValueLocalVars memory vars;
+        vars.tokenId = tokenId;
+        vars.value = value;
+        vars.validTo = validTo;
+       
         //check if the protection belongs to the caller
-        require(isUserProtection(msg.sender, tokenId), "ERROR: CALLER IS NOT THE OWNER OF PROTECTION");
+        require(isUserProtection(msg.sender, vars.tokenId), "ERROR: CALLER IS NOT THE OWNER OF PROTECTION");
 
-        address currency = getUnderlyingAsset(tokenId);
-
+        //address currency = getUnderlyingAsset(tokenId);
+        vars.currency = getUnderlyingAsset(vars.tokenId);
         Moartroller moartroller = Moartroller(_moartrollerAddress);
-        MToken mToken = moartroller.tokenAddressToMToken(currency);
-        require(moartroller.oracle().getUnderlyingPrice(mToken) <= getUnderlyingStrikePrice(tokenId), "ERROR: C-OP STRIKE PRICE IS LOWER THAN ASSET SPOT PRICE");
+        vars.mToken = moartroller.tokenAddressToMToken(vars.currency);
+        vars.mTokenPrice = moartroller.oracle().getUnderlyingPriceSigned(address(vars.mToken), mTokenPrice, vars.validTo, mTokenPriceSignature);
+        require(vars.mTokenPrice <= getUnderlyingStrikePrice(vars.tokenId), "ERROR: C-OP STRIKE PRICE IS LOWER THAN ASSET SPOT PRICE");
+        // require(moartroller.oracle().getUnderlyingPrice(mToken) <= getUnderlyingStrikePrice(tokenId), "ERROR: C-OP STRIKE PRICE IS LOWER THAN ASSET SPOT PRICE");
 
-        uint protectionTotalValue = getUnderlyingProtectionTotalValue(tokenId);
-        uint maxOptimizableValue = moartroller.getMaxOptimizableValue(mToken, ownerOf(tokenId));
+        uint protectionTotalValue = getUnderlyingProtectionTotalValue(vars.tokenId);
+        uint maxOptimizableValue = moartroller.getMaxOptimizableValue(vars.mToken, ownerOf(vars.tokenId), vars.mTokenPrice);
 
         // add protection locked value if any
-        uint protectionLockedValue = getUnderlyingProtectionLockedValue(tokenId);
+        uint protectionLockedValue = getUnderlyingProtectionLockedValue(vars.tokenId);
         if ( protectionLockedValue > 0) {
             maxOptimizableValue = add_(maxOptimizableValue, protectionLockedValue);
         }
 
         uint valueToLock;
 
-        if (value != 0) {
+        if (vars.value != 0) {
             // check if lock value is at most max optimizable value
-            require(value <= maxOptimizableValue, "ERROR: VALUE TO BE LOCKED EXCEEDS ALLOWED OPTIMIZATION VALUE");
+            require(vars.value <= maxOptimizableValue, "ERROR: VALUE TO BE LOCKED EXCEEDS ALLOWED OPTIMIZATION VALUE");
             // check if lock value is at most protection total value
-            require( value <= protectionTotalValue, "ERROR: VALUE TO BE LOCKED EXCEEDS PROTECTION TOTAL VALUE");
-            valueToLock = value;
+            require(vars.value <= protectionTotalValue, "ERROR: VALUE TO BE LOCKED EXCEEDS PROTECTION TOTAL VALUE");
+            valueToLock = vars.value;
         } else {
             // if we want to lock maximum protection value let's lock the value that is at most max optimizable value
             if (protectionTotalValue > maxOptimizableValue) {

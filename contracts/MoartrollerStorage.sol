@@ -115,16 +115,16 @@ contract MoartrollerV3Storage is MoartrollerV2Storage {
     mapping(address => uint) public moarSpeeds;
 
     /// @dev The MOAR market supply state for each market
-    mapping(address => MoarMarketState) public moarSupplyState;
+    mapping(address => MoarMarketState) internal moarSupplyState;
 
     /// @dev The MOAR market borrow state for each market
-    mapping(address => MoarMarketState) public moarBorrowState;
+    mapping(address => MoarMarketState) internal moarBorrowState;
 
     /// @dev The MOAR borrow index for each market for each supplier as of the last time they accrued MOAR
-    mapping(address => mapping(address => uint)) public moarSupplierIndex;
+    mapping(address => mapping(address => uint)) internal moarSupplierIndex;
 
     /// @dev The MOAR borrow index for each market for each borrower as of the last time they accrued MOAR
-    mapping(address => mapping(address => uint)) public moarBorrowerIndex;
+    mapping(address => mapping(address => uint)) internal moarBorrowerIndex;
 
     /// @dev The MOAR accrued but not yet transferred to each user
     mapping(address => uint) public moarAccrued;
